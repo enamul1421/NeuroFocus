@@ -6,7 +6,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useStore } from '../../store';
 import { colors } from '../../theme';
-import { scheduleStepNotification, suggestStepDate } from './utils';
+import { scheduleStepNotification, suggestStepDates } from './utils';
 import * as Notifications from 'expo-notifications';
 
 const TASK_TEMPLATES = {
@@ -21,13 +21,13 @@ const TASK_TEMPLATES = {
   other:        { icon: '📋', label: 'Something else',         defaultDays: 7,  totalHours: 5,  steps: [{ name: 'Step 1', pct: 33 }, { name: 'Step 2', pct: 33 }, { name: 'Step 3', pct: 34 }] },
 };
 
-const STEP = { TYPE: 'type', TITLE: 'title', SCHEDULE: 'schedule' };
+const SCREEN = { TYPE: 'type', TITLE: 'title', SCHEDULE: 'schedule' };
 
 function calcDuration(pct, totalHours) {
   return Math.max(Math.round((pct / 100) * totalHours * 60), 5);
 }
 
-function fmtMins(mins) {
+export function fmtMins(mins) {
   const n = Number(mins) || 0;
   if (n < 60) return `${n} min`;
   const h = Math.floor(n / 60);
@@ -35,10 +35,17 @@ function fmtMins(mins) {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-export default function AddTask({ navigation }) {
-  const { addPlannerTask } = useStore(s => ({ addPlannerTask: s.addPlannerTask }));
+function makeSession(scheduledDate, durationMin) {
+  return { id: `sess_${Date.now()}_${Math.random()}`, scheduledDate, durationMin, notificationId: null };
+}
 
-  const [screen, setScreen] = useState(STEP.TYPE);
+export default function AddTask({ navigation }) {
+  const { addPlannerTask, plannerTasks } = useStore(s => ({
+    addPlannerTask: s.addPlannerTask,
+    plannerTasks: s.plannerTasks || [],
+  }));
+
+  const [screen, setScreen] = useState(SCREEN.TYPE);
   const [selectedType, setSelectedType] = useState(null);
   const [taskTitle, setTaskTitle] = useState('');
   const [deadline, setDeadline] = useState(() => {
@@ -47,44 +54,57 @@ export default function AddTask({ navigation }) {
   const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
   const [steps, setSteps] = useState([]);
   const [totalHours, setTotalHours] = useState(7);
+  const [totalHoursText, setTotalHoursText] = useState('7');
 
   // Wizard state
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [openPicker, setOpenPicker] = useState(null); // { sessIdx, mode: 'date'|'time' }
   const [tempDate, setTempDate] = useState(new Date());
   const [saving, setSaving] = useState(false);
+
+  // ── Template loading ─────────────────────────────────────────────────────
 
   function loadTemplate(typeKey) {
     const template = TASK_TEMPLATES[typeKey];
     setSelectedType(typeKey);
     setTotalHours(template.totalHours);
-    let pctSoFar = 0;
+    setTotalHoursText(String(template.totalHours));
+    const durations = template.steps.map(s => calcDuration(s.pct, template.totalHours));
+    const suggestedDates = suggestStepDates(deadline.toISOString(), durations, plannerTasks);
     const built = template.steps.map((s, i) => {
-      const suggestedISO = suggestStepDate(deadline.toISOString(), s.pct, pctSoFar);
-      pctSoFar += s.pct;
+      const dur = calcDuration(s.pct, template.totalHours);
       return {
         id: `step_${Date.now()}_${i}`,
         name: s.name,
         pct: s.pct,
-        durationMin: calcDuration(s.pct, template.totalHours),
-        scheduledDate: suggestedISO,
+        durationMin: dur,
+        sessions: [makeSession(suggestedDates[i], dur)],
         completed: false,
-        notificationId: null,
       };
     });
     setSteps(built);
-    setScreen(STEP.TITLE);
+    setScreen(SCREEN.TITLE);
   }
 
   function goToSchedule() {
-    // Sync durationMin with current totalHours before entering wizard
-    setSteps(prev => prev.map(s => ({ ...s, durationMin: calcDuration(s.pct, totalHours) })));
+    setSteps(prev => {
+      const durations = prev.map(s => calcDuration(s.pct, totalHours));
+      // Recalculate conflict-free dates with final durations
+      const newDates = suggestStepDates(deadline.toISOString(), durations, plannerTasks);
+      return prev.map((s, i) => ({
+        ...s,
+        durationMin: durations[i],
+        sessions: s.sessions.map((sess, si) =>
+          si === 0 ? { ...sess, durationMin: durations[i], scheduledDate: newDates[i] } : sess
+        ),
+      }));
+    });
     setCurrentStepIdx(0);
-    setScreen(STEP.SCHEDULE);
+    setOpenPicker(null);
+    setScreen(SCREEN.SCHEDULE);
   }
 
-  // ── Step mutation helpers ────────────────────────────────────────────────
+  // ── Step-level helpers ───────────────────────────────────────────────────
 
   function updateStepName(idx, name) {
     setSteps(prev => prev.map((s, i) => i === idx ? { ...s, name } : s));
@@ -95,24 +115,6 @@ export default function AddTask({ navigation }) {
     setSteps(prev => prev.map((s, i) => i === idx ? { ...s, durationMin: isNaN(n) ? s.durationMin : Math.max(n, 1) } : s));
   }
 
-  function updateStepDate(idx, date) {
-    setSteps(prev => prev.map((s, i) => {
-      if (i !== idx) return s;
-      const existing = new Date(s.scheduledDate);
-      date.setHours(existing.getHours(), existing.getMinutes(), 0, 0);
-      return { ...s, scheduledDate: date.toISOString() };
-    }));
-  }
-
-  function updateStepTime(idx, date) {
-    setSteps(prev => prev.map((s, i) => {
-      if (i !== idx) return s;
-      const existing = new Date(s.scheduledDate);
-      existing.setHours(date.getHours(), date.getMinutes(), 0, 0);
-      return { ...s, scheduledDate: existing.toISOString() };
-    }));
-  }
-
   function addStepAfterCurrent() {
     const insertAt = currentStepIdx + 1;
     const newStep = {
@@ -120,33 +122,132 @@ export default function AddTask({ navigation }) {
       name: 'New step',
       pct: 10,
       durationMin: 30,
-      scheduledDate: new Date().toISOString(),
+      sessions: [makeSession(new Date().toISOString(), 30)],
       completed: false,
-      notificationId: null,
     };
-    setSteps(prev => {
-      const next = [...prev];
-      next.splice(insertAt, 0, newStep);
-      return next;
-    });
+    setSteps(prev => { const next = [...prev]; next.splice(insertAt, 0, newStep); return next; });
     setCurrentStepIdx(insertAt);
+    setOpenPicker(null);
   }
 
   function deleteCurrentStep() {
     if (steps.length === 1) return;
     setSteps(prev => prev.filter((_, i) => i !== currentStepIdx));
     setCurrentStepIdx(prev => Math.min(prev, steps.length - 2));
+    setOpenPicker(null);
   }
 
+  // ── Session-level helpers ────────────────────────────────────────────────
+
+  function addSession(stepIdx) {
+    setSteps(prev => prev.map((s, i) => {
+      if (i !== stepIdx) return s;
+      return { ...s, sessions: [...s.sessions, makeSession(new Date().toISOString(), 30)] };
+    }));
+  }
+
+  function deleteSession(stepIdx, sessIdx) {
+    setSteps(prev => prev.map((s, i) => {
+      if (i !== stepIdx) return s;
+      return { ...s, sessions: s.sessions.filter((_, si) => si !== sessIdx) };
+    }));
+    setOpenPicker(null);
+  }
+
+  function getConflicts(stepIdx, sessIdx, proposedISO, durationMin) {
+    const start = new Date(proposedISO);
+    const end = new Date(start.getTime() + (durationMin || 30) * 60000);
+    const list = [];
+    for (const task of plannerTasks) {
+      for (const step of task.steps) {
+        for (const sess of (step.sessions || [])) {
+          if (!sess.scheduledDate) continue;
+          const s2 = new Date(sess.scheduledDate);
+          const e2 = new Date(s2.getTime() + (sess.durationMin || 30) * 60000);
+          if (start < e2 && s2 < end) list.push(`"${task.title}": ${step.name}`);
+        }
+      }
+    }
+    steps.forEach((step, si) => {
+      step.sessions.forEach((sess, ssi) => {
+        if (si === stepIdx && ssi === sessIdx) return;
+        const s2 = new Date(sess.scheduledDate);
+        const e2 = new Date(s2.getTime() + (sess.durationMin || 30) * 60000);
+        if (start < e2 && s2 < end) list.push(`This task — ${step.name} (Session ${ssi + 1})`);
+      });
+    });
+    return list;
+  }
+
+  function trySetSessionDate(stepIdx, sessIdx, date) {
+    const existing = new Date(steps[stepIdx].sessions[sessIdx].scheduledDate);
+    const newDate = new Date(date);
+    newDate.setHours(existing.getHours(), existing.getMinutes(), 0, 0);
+    const newISO = newDate.toISOString();
+    const c = getConflicts(stepIdx, sessIdx, newISO, steps[stepIdx].sessions[sessIdx].durationMin);
+    if (c.length > 0) {
+      Alert.alert('⚠️ Time overlap', `This slot is already taken by:\n\n${c.join('\n')}\n\nPick a different date.`);
+      return;
+    }
+    setTempDate(newDate);
+    setSteps(prev => prev.map((s, i) => i !== stepIdx ? s : {
+      ...s, sessions: s.sessions.map((sess, si) => si !== sessIdx ? sess : { ...sess, scheduledDate: newISO }),
+    }));
+  }
+
+  function trySetSessionTime(stepIdx, sessIdx, date) {
+    const existing = new Date(steps[stepIdx].sessions[sessIdx].scheduledDate);
+    existing.setHours(date.getHours(), date.getMinutes(), 0, 0);
+    const newISO = existing.toISOString();
+    const c = getConflicts(stepIdx, sessIdx, newISO, steps[stepIdx].sessions[sessIdx].durationMin);
+    if (c.length > 0) {
+      Alert.alert('⚠️ Time overlap', `This slot is already taken by:\n\n${c.join('\n')}\n\nPick a different time.`);
+      return;
+    }
+    setTempDate(new Date(newISO));
+    setSteps(prev => prev.map((s, i) => i !== stepIdx ? s : {
+      ...s, sessions: s.sessions.map((sess, si) => si !== sessIdx ? sess : { ...sess, scheduledDate: newISO }),
+    }));
+  }
+
+  function updateSessionDuration(stepIdx, sessIdx, value) {
+    const n = parseInt(value, 10);
+    setSteps(prev => prev.map((s, i) => {
+      if (i !== stepIdx) return s;
+      const sessions = s.sessions.map((sess, si) =>
+        si !== sessIdx ? sess : { ...sess, durationMin: isNaN(n) ? sess.durationMin : Math.max(n, 1) }
+      );
+      return { ...s, sessions };
+    }));
+  }
+
+  // ── Save ─────────────────────────────────────────────────────────────────
+
   async function saveTask() {
+    // Block save if any session conflicts with existing tasks
+    for (let si = 0; si < steps.length; si++) {
+      for (let ssi = 0; ssi < steps[si].sessions.length; ssi++) {
+        const sess = steps[si].sessions[ssi];
+        const c = getConflicts(si, ssi, sess.scheduledDate, sess.durationMin);
+        if (c.length > 0) {
+          Alert.alert('⚠️ Conflicts found', `"${steps[si].name}" Session ${ssi + 1} overlaps with:\n\n${c.join('\n')}\n\nFix all conflicts before saving.`);
+          return;
+        }
+      }
+    }
     setSaving(true);
     try {
       const { status } = await Notifications.requestPermissionsAsync();
       const canNotify = status === 'granted';
-      const stepsWithNotifs = await Promise.all(steps.map(async s => {
-        let notifId = null;
-        if (canNotify && s.scheduledDate) notifId = await scheduleStepNotification(s, taskTitle);
-        return { ...s, notificationId: notifId };
+      const stepsWithNotifs = await Promise.all(steps.map(async step => {
+        const sessions = await Promise.all(step.sessions.map(async sess => {
+          let notifId = null;
+          if (canNotify && sess.scheduledDate) {
+            notifId = await scheduleStepNotification({ scheduledDate: sess.scheduledDate, name: step.name }, taskTitle);
+          }
+          return { ...sess, notificationId: notifId };
+        }));
+        return { ...step, sessions };
       }));
       addPlannerTask({
         id: `task_${Date.now()}`,
@@ -169,7 +270,7 @@ export default function AddTask({ navigation }) {
   const template = selectedType ? TASK_TEMPLATES[selectedType] : null;
 
   // ── TYPE PICKER ──────────────────────────────────────────────────────────
-  if (screen === STEP.TYPE) {
+  if (screen === SCREEN.TYPE) {
     return (
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
@@ -191,13 +292,13 @@ export default function AddTask({ navigation }) {
     );
   }
 
-  // ── TITLE + DEADLINE + HOURS ─────────────────────────────────────────────
-  if (screen === STEP.TITLE) {
+  // ── TITLE ────────────────────────────────────────────────────────────────
+  if (screen === SCREEN.TITLE) {
     return (
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <SafeAreaView style={styles.container}>
           <ScrollView contentContainerStyle={styles.content}>
-            <TouchableOpacity onPress={() => setScreen(STEP.TYPE)} style={styles.backBtn}>
+            <TouchableOpacity onPress={() => setScreen(SCREEN.TYPE)} style={styles.backBtn}>
               <Text style={styles.backBtnText}>← Back</Text>
             </TouchableOpacity>
             <Text style={styles.stepTag}>{template.icon} {template.label}</Text>
@@ -230,29 +331,34 @@ export default function AddTask({ navigation }) {
                   setShowDeadlinePicker(Platform.OS === 'ios');
                   if (date) {
                     setDeadline(date);
-                    let pctSoFar = 0;
-                    setSteps(prev => prev.map(s => {
-                      const newDate = suggestStepDate(date.toISOString(), s.pct, pctSoFar);
-                      pctSoFar += s.pct;
-                      return { ...s, scheduledDate: newDate };
-                    }));
+                    setSteps(prev => {
+                      const newDates = suggestStepDates(date.toISOString(), prev.map(s => s.durationMin), plannerTasks);
+                      return prev.map((s, i) => ({
+                        ...s,
+                        sessions: s.sessions.map((sess, si) => si === 0 ? { ...sess, scheduledDate: newDates[i] } : sess),
+                      }));
+                    });
                   }
                 }}
               />
             )}
 
-            <Text style={styles.label}>Total estimated hours</Text>
+            <Text style={styles.label}>Estimated duration needed</Text>
             <View style={styles.hoursRow}>
               <TextInput
                 style={styles.hoursInput}
-                value={String(totalHours)}
-                onChangeText={v => { const n = parseFloat(v); if (!isNaN(n) && n > 0) setTotalHours(n); }}
+                value={totalHoursText}
+                onChangeText={v => {
+                  setTotalHoursText(v);
+                  const n = parseFloat(v);
+                  if (!isNaN(n) && n > 0) setTotalHours(n);
+                }}
                 keyboardType="decimal-pad"
+                selectTextOnFocus
               />
-              <Text style={styles.hoursUnit}>hrs total</Text>
+              <Text style={styles.hoursUnit}>hours</Text>
             </View>
 
-            {/* Live duration preview — updates as totalHours changes */}
             <View style={styles.stepDurationPreview}>
               <Text style={styles.stepDurationPreviewTitle}>Suggested time per step</Text>
               {steps.map(s => (
@@ -276,59 +382,56 @@ export default function AddTask({ navigation }) {
     );
   }
 
-  // ── SCHEDULE STEPS (wizard) ──────────────────────────────────────────────
-  if (screen === STEP.SCHEDULE) {
+  // ── SCHEDULE WIZARD ──────────────────────────────────────────────────────
+  if (screen === SCREEN.SCHEDULE) {
     const current = steps[currentStepIdx];
-    const currentDate = current?.scheduledDate ? new Date(current.scheduledDate) : new Date();
     const isLast = currentStepIdx === steps.length - 1;
     const scheduledBefore = steps.slice(0, currentStepIdx);
     const scheduledAfter = steps.slice(currentStepIdx + 1);
-
-    const endTime = current?.scheduledDate
-      ? new Date(new Date(current.scheduledDate).getTime() + (Number(current.durationMin) || 0) * 60000)
-      : null;
-    const hasTime = currentDate.getHours() !== 0 || currentDate.getMinutes() !== 0;
+    const prevStep = currentStepIdx > 0 ? steps[currentStepIdx - 1] : null;
+    const minDate = prevStep ? new Date(prevStep.sessions[0].scheduledDate) : new Date();
 
     return (
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
 
-          <Text style={styles.stepTag}>Step {currentStepIdx + 1} of {steps.length}</Text>
-
-          {/* Due date banner */}
-          <View style={styles.dueDateBanner}>
-            <Text style={styles.dueDateLabel}>⚠️ Task due:</Text>
-            <Text style={styles.dueDateValue}>
-              {deadline.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          <View style={styles.taskHeaderRow}>
+            <Text style={styles.taskTitleHeader} numberOfLines={1}>{taskTitle}</Text>
+            <Text style={styles.taskDueInline}>
+              Due {deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </Text>
           </View>
+          <Text style={styles.stepTag}>Step {currentStepIdx + 1} of {steps.length}</Text>
 
-          {/* Previously scheduled steps */}
+          {/* Already scheduled steps */}
           {scheduledBefore.length > 0 && (
             <View style={styles.prevStepsCard}>
               <Text style={styles.prevStepsTitle}>✓ Already scheduled</Text>
-              {scheduledBefore.map(s => {
-                const d = new Date(s.scheduledDate);
-                const end = new Date(d.getTime() + (Number(s.durationMin) || 0) * 60000);
-                const ht = d.getHours() !== 0 || d.getMinutes() !== 0;
-                return (
-                  <View key={s.id} style={styles.prevStepRow}>
-                    <View style={styles.prevStepDot} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.prevStepName}>{s.name}</Text>
-                      <Text style={styles.prevStepDate}>
-                        {d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                        {ht ? ` · ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}` : ''}
-                        {` · ${fmtMins(s.durationMin)}`}
-                      </Text>
-                    </View>
+              {scheduledBefore.map(s => (
+                <View key={s.id} style={styles.prevStepRow}>
+                  <View style={styles.prevStepDot} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.prevStepName}>{s.name}</Text>
+                    {s.sessions.map((sess, si) => {
+                      const d = new Date(sess.scheduledDate);
+                      const end = new Date(d.getTime() + sess.durationMin * 60000);
+                      const ht = d.getHours() !== 0 || d.getMinutes() !== 0;
+                      return (
+                        <Text key={sess.id} style={styles.prevStepDate}>
+                          {s.sessions.length > 1 ? `Session ${si + 1}: ` : ''}
+                          {d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                          {ht ? ` · ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} – ${end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}` : ''}
+                          {` · ${fmtMins(sess.durationMin)}`}
+                        </Text>
+                      );
+                    })}
                   </View>
-                );
-              })}
+                </View>
+              ))}
             </View>
           )}
 
-          {/* Current step card — editable name + duration */}
+          {/* Current step — editable name + total duration */}
           <Text style={styles.headline}>When will you do this?</Text>
           <View style={styles.stepPreviewCard}>
             <TextInput
@@ -339,7 +442,7 @@ export default function AddTask({ navigation }) {
               placeholderTextColor={colors.textLight}
             />
             <View style={styles.durationRow}>
-              <Text style={styles.durationLabel}>⏱ Duration:</Text>
+              <Text style={styles.durationLabel}>⏱ Total:</Text>
               <TextInput
                 style={styles.durationInput}
                 value={String(current?.durationMin ?? '')}
@@ -352,61 +455,110 @@ export default function AddTask({ navigation }) {
                 <Text style={styles.durationFormatted}>({fmtMins(current.durationMin)})</Text>
               )}
             </View>
-            {hasTime && endTime && (
-              <Text style={styles.stepTimeBlock}>
-                📅 {currentDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                {' – '}
-                {endTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-              </Text>
-            )}
           </View>
 
-          {/* Date */}
-          <Text style={styles.label}>Date</Text>
-          <TouchableOpacity style={styles.dateButton} onPress={() => { setTempDate(currentDate); setShowDatePicker(true); }}>
-            <Text style={styles.dateButtonText}>
-              {currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-            </Text>
-            <Text style={styles.dateButtonEdit}>Change</Text>
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              value={tempDate}
-              mode="date"
-              display="spinner"
-              maximumDate={deadline}
-              onChange={(_, date) => {
-                setShowDatePicker(Platform.OS === 'ios');
-                if (date) { updateStepDate(currentStepIdx, date); setTempDate(date); }
-              }}
-            />
-          )}
+          {/* Sessions */}
+          {current?.sessions.map((sess, sessIdx) => {
+            const sessDate = new Date(sess.scheduledDate);
+            const sessEnd = new Date(sessDate.getTime() + (Number(sess.durationMin) || 0) * 60000);
+            const hasTime = sessDate.getHours() !== 0 || sessDate.getMinutes() !== 0;
+            const isOpenDate = openPicker?.sessIdx === sessIdx && openPicker?.mode === 'date';
+            const isOpenTime = openPicker?.sessIdx === sessIdx && openPicker?.mode === 'time';
 
-          {/* Time */}
-          <Text style={styles.label}>Time</Text>
-          <TouchableOpacity style={styles.dateButton} onPress={() => { setTempDate(currentDate); setShowTimePicker(true); }}>
-            <Text style={styles.dateButtonText}>
-              {currentDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-            </Text>
-            <Text style={styles.dateButtonEdit}>Change</Text>
+            return (
+              <View key={sess.id} style={styles.sessionCard}>
+                <View style={styles.sessionHeader}>
+                  <Text style={styles.sessionLabel}>
+                    {current.sessions.length > 1 ? `Session ${sessIdx + 1}` : 'Schedule'}
+                  </Text>
+                  {current.sessions.length > 1 && (
+                    <TouchableOpacity onPress={() => deleteSession(currentStepIdx, sessIdx)}>
+                      <Text style={styles.sessionDeleteText}>✕ Remove</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Per-session duration */}
+                <View style={styles.sessDurationRow}>
+                  <Text style={styles.sessDurationLabel}>⏱</Text>
+                  <TextInput
+                    style={styles.sessDurationInput}
+                    value={String(sess.durationMin)}
+                    onChangeText={v => updateSessionDuration(currentStepIdx, sessIdx, v)}
+                    keyboardType="number-pad"
+                    selectTextOnFocus
+                  />
+                  <Text style={styles.sessDurationUnit}>min</Text>
+                  {hasTime && (
+                    <Text style={styles.sessTimeBlock}>
+                      {sessDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                      {' – '}
+                      {sessEnd.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                    </Text>
+                  )}
+                </View>
+
+                {/* Date */}
+                <TouchableOpacity
+                  style={styles.pickerRow}
+                  onPress={() => { setTempDate(sessDate); setOpenPicker(isOpenDate ? null : { sessIdx, mode: 'date' }); }}
+                >
+                  <Text style={styles.pickerRowLabel}>📅</Text>
+                  <Text style={styles.pickerRowValue}>
+                    {sessDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  </Text>
+                  <Text style={styles.pickerRowAction}>{isOpenDate ? 'Done' : 'Change'}</Text>
+                </TouchableOpacity>
+                {isOpenDate && (
+                  <DateTimePicker
+                    value={tempDate}
+                    mode="date"
+                    display="spinner"
+                    minimumDate={minDate}
+                    maximumDate={deadline}
+                    onChange={(_, date) => {
+                      if (Platform.OS !== 'ios') setOpenPicker(null);
+                      if (date) trySetSessionDate(currentStepIdx, sessIdx, date);
+                    }}
+                  />
+                )}
+
+                {/* Time */}
+                <TouchableOpacity
+                  style={styles.pickerRow}
+                  onPress={() => { setTempDate(sessDate); setOpenPicker(isOpenTime ? null : { sessIdx, mode: 'time' }); }}
+                >
+                  <Text style={styles.pickerRowLabel}>🕓</Text>
+                  <Text style={styles.pickerRowValue}>
+                    {sessDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                  </Text>
+                  <Text style={styles.pickerRowAction}>{isOpenTime ? 'Done' : 'Change'}</Text>
+                </TouchableOpacity>
+                {isOpenTime && (
+                  <DateTimePicker
+                    value={tempDate}
+                    mode="time"
+                    display="spinner"
+                    onChange={(_, date) => {
+                      if (Platform.OS !== 'ios') setOpenPicker(null);
+                      if (date) trySetSessionTime(currentStepIdx, sessIdx, date);
+                    }}
+                  />
+                )}
+              </View>
+            );
+          })}
+
+          {/* Add timeslot */}
+          <TouchableOpacity style={styles.addSessionBtn} onPress={() => addSession(currentStepIdx)}>
+            <Text style={styles.addSessionBtnText}>+ Add another timeslot</Text>
           </TouchableOpacity>
-          {showTimePicker && (
-            <DateTimePicker
-              value={tempDate}
-              mode="time"
-              display="spinner"
-              onChange={(_, date) => {
-                setShowTimePicker(Platform.OS === 'ios');
-                if (date) { updateStepTime(currentStepIdx, date); setTempDate(date); }
-              }}
-            />
-          )}
 
           <View style={styles.notifNote}>
-            <Text style={styles.notifNoteText}>📱 App will remind you at this date and time.</Text>
+            <Text style={styles.notifNoteText}>📱 App will remind you at each scheduled time.</Text>
           </View>
 
-          {/* Add / delete */}
+          {/* Add / delete step */}
           <View style={styles.stepActions}>
             <TouchableOpacity style={styles.stepActionBtn} onPress={addStepAfterCurrent}>
               <Text style={styles.stepActionAdd}>+ Add step after this</Text>
@@ -425,7 +577,9 @@ export default function AddTask({ navigation }) {
               {scheduledAfter.map(s => (
                 <View key={s.id} style={styles.remainingRow}>
                   <Text style={styles.remainingItem}>· {s.name}</Text>
-                  <Text style={styles.remainingDuration}>~{fmtMins(s.durationMin)}</Text>
+                  <Text style={styles.remainingDuration}>
+                    {s.sessions.length > 1 ? `${s.sessions.length} sessions` : `~${fmtMins(s.durationMin)}`}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -437,18 +591,20 @@ export default function AddTask({ navigation }) {
         <View style={styles.navRow}>
           <TouchableOpacity
             style={styles.backNavBtn}
-            onPress={() => currentStepIdx === 0 ? setScreen(STEP.TITLE) : setCurrentStepIdx(currentStepIdx - 1)}
+            onPress={() => {
+              setOpenPicker(null);
+              if (currentStepIdx === 0) setScreen(SCREEN.TITLE);
+              else setCurrentStepIdx(currentStepIdx - 1);
+            }}
           >
             <Text style={styles.backNavBtnText}>{currentStepIdx === 0 ? '← Back' : '← Prev'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, styles.buttonFlex, saving && styles.buttonDisabled]}
-            onPress={() => isLast ? saveTask() : setCurrentStepIdx(currentStepIdx + 1)}
+            onPress={() => { setOpenPicker(null); isLast ? saveTask() : setCurrentStepIdx(currentStepIdx + 1); }}
             disabled={saving}
           >
-            <Text style={styles.buttonText}>
-              {saving ? 'Saving…' : isLast ? 'Save task ✓' : 'Next step →'}
-            </Text>
+            <Text style={styles.buttonText}>{saving ? 'Saving…' : isLast ? 'Save task ✓' : 'Next step →'}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -463,6 +619,9 @@ const styles = StyleSheet.create({
   content: { padding: 24, paddingBottom: 16 },
   backBtn: { marginBottom: 16 },
   backBtnText: { fontSize: 15, color: colors.primary },
+  taskHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  taskTitleHeader: { fontSize: 18, fontWeight: '800', color: colors.text, flex: 1, marginRight: 12 },
+  taskDueInline: { fontSize: 13, fontWeight: '700', color: '#E65100', backgroundColor: '#FFF3E0', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, overflow: 'hidden' },
   stepTag: { fontSize: 13, color: colors.primary, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 },
   headline: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 12 },
   body: { fontSize: 16, color: colors.textLight, lineHeight: 24, marginBottom: 20 },
@@ -486,30 +645,43 @@ const styles = StyleSheet.create({
   stepDurationName: { fontSize: 13, color: colors.text, flex: 1 },
   stepDurationBadge: { fontSize: 12, color: colors.primary, fontWeight: '700' },
 
-  dueDateBanner: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#FFF3E0', borderRadius: 10, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: '#FF9800' },
-  dueDateLabel: { fontSize: 13, color: '#E65100', fontWeight: '700' },
-  dueDateValue: { fontSize: 13, color: '#E65100', fontWeight: '600', flex: 1 },
 
   prevStepsCard: { backgroundColor: '#F1F8E9', borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#AED581' },
   prevStepsTitle: { fontSize: 13, fontWeight: '700', color: '#558B2F', marginBottom: 10 },
   prevStepRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 8 },
   prevStepDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4CAF50', marginTop: 4 },
   prevStepName: { fontSize: 13, color: '#33691E', fontWeight: '600' },
-  prevStepDate: { fontSize: 12, color: '#558B2F', marginTop: 1 },
+  prevStepDate: { fontSize: 12, color: '#558B2F', marginTop: 2 },
 
-  stepPreviewCard: { backgroundColor: colors.primaryLight, borderRadius: 12, padding: 16, borderWidth: 1.5, borderColor: colors.primary, marginBottom: 8 },
+  stepPreviewCard: { backgroundColor: colors.primaryLight, borderRadius: 12, padding: 16, borderWidth: 1.5, borderColor: colors.primary, marginBottom: 12 },
   stepNameInput: { fontSize: 17, fontWeight: '700', color: colors.text, borderBottomWidth: 1.5, borderBottomColor: colors.primary + '60', paddingBottom: 8, marginBottom: 12 },
-  durationRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  durationRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   durationLabel: { fontSize: 13, color: colors.primary, fontWeight: '600' },
   durationInput: { borderWidth: 1.5, borderColor: colors.primary + '80', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, fontSize: 15, fontWeight: '700', color: colors.text, backgroundColor: '#fff', width: 56, textAlign: 'center' },
   durationUnit: { fontSize: 13, color: colors.textLight },
   durationFormatted: { fontSize: 13, color: colors.primary, fontWeight: '600' },
-  stepTimeBlock: { fontSize: 13, color: colors.primary, fontWeight: '600', marginTop: 8 },
 
-  notifNote: { backgroundColor: '#E8F5E9', borderRadius: 10, padding: 12, marginTop: 8, marginBottom: 8 },
+  sessionCard: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#EBEBEB', padding: 14, marginBottom: 10 },
+  sessionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  sessionLabel: { fontSize: 13, fontWeight: '800', color: colors.text, textTransform: 'uppercase', letterSpacing: 0.5 },
+  sessionDeleteText: { fontSize: 13, color: '#F44336', fontWeight: '600' },
+  sessDurationRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  sessDurationLabel: { fontSize: 16 },
+  sessDurationInput: { borderWidth: 1.5, borderColor: '#E0E0E0', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, fontSize: 15, fontWeight: '700', color: colors.text, backgroundColor: '#F9F9F9', width: 56, textAlign: 'center' },
+  sessDurationUnit: { fontSize: 13, color: colors.textLight },
+  sessTimeBlock: { fontSize: 12, color: colors.primary, fontWeight: '600', flex: 1, textAlign: 'right' },
+  pickerRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 9, borderTopWidth: 1, borderTopColor: '#F5F5F5' },
+  pickerRowLabel: { fontSize: 15, width: 22, textAlign: 'center' },
+  pickerRowValue: { flex: 1, fontSize: 14, color: colors.text, fontWeight: '500' },
+  pickerRowAction: { fontSize: 13, color: colors.primary, fontWeight: '600' },
+
+  addSessionBtn: { borderWidth: 1.5, borderColor: colors.primary, borderStyle: 'dashed', borderRadius: 10, padding: 12, alignItems: 'center', marginBottom: 12 },
+  addSessionBtnText: { fontSize: 14, color: colors.primary, fontWeight: '700' },
+
+  notifNote: { backgroundColor: '#E8F5E9', borderRadius: 10, padding: 12, marginBottom: 8 },
   notifNoteText: { fontSize: 13, color: '#2E7D32' },
 
-  stepActions: { flexDirection: 'row', gap: 12, marginTop: 4, marginBottom: 8 },
+  stepActions: { flexDirection: 'row', gap: 16, marginBottom: 8 },
   stepActionBtn: { paddingVertical: 6 },
   stepActionAdd: { fontSize: 13, color: colors.primary, fontWeight: '700' },
   stepActionDelete: { fontSize: 13, color: '#F44336', fontWeight: '700' },

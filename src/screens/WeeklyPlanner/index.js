@@ -47,7 +47,11 @@ export default function WeeklyPlanner({ navigation }) {
           text: 'Delete', style: 'destructive',
           onPress: async () => {
             for (const step of task.steps) {
-              await cancelStepNotification(step.notificationId);
+              if (step.sessions) {
+                for (const sess of step.sessions) await cancelStepNotification(sess.notificationId);
+              } else {
+                await cancelStepNotification(step.notificationId);
+              }
             }
             deletePlannerTask(task.id);
           },
@@ -159,11 +163,22 @@ export default function WeeklyPlanner({ navigation }) {
                         </View>
                         <View style={styles.stepInfo}>
                           <Text style={[styles.stepName, step.completed && styles.stepNameDone]}>{step.name}</Text>
-                          {step.scheduledDate && (
+                          {step.sessions ? step.sessions.map((sess, si) => {
+                            const d = new Date(sess.scheduledDate);
+                            const end = new Date(d.getTime() + (sess.durationMin || 0) * 60000);
+                            const ht = d.getHours() !== 0 || d.getMinutes() !== 0;
+                            return (
+                              <Text key={sess.id} style={styles.stepSchedule}>
+                                {step.sessions.length > 1 ? `Session ${si + 1}: ` : ''}
+                                {formatDate(sess.scheduledDate)}
+                                {ht ? ` · ${formatTime(sess.scheduledDate)} – ${formatTime(end.toISOString())}` : ''}
+                              </Text>
+                            );
+                          }) : step.scheduledDate ? (
                             <Text style={styles.stepSchedule}>
                               {formatDate(step.scheduledDate)}{step.scheduledTime ? ` at ${formatTime(step.scheduledDate)}` : ''}
                             </Text>
-                          )}
+                          ) : null}
                         </View>
                       </TouchableOpacity>
                     ))}

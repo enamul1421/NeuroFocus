@@ -10,7 +10,7 @@ export default function Screen1Welcome({ navigation }) {
           <Text style={styles.badgeText}>NeuroFocus</Text>
         </View>
 
-        <Text style={styles.headline}>Built for brains{'\n'}like yours.</Text>
+        <Text style={styles.headline}>Built for brains{'\n'}like ours.</Text>
 
         <Text style={styles.body}>
           NeuroFocus was designed by a neurodivergent high schooler,

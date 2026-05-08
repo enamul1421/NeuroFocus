@@ -8,37 +8,42 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useStore } from './src/store';
 import { colors } from './src/theme';
 
-// Screens
+// Onboarding
 import Screen1Welcome from './src/screens/Onboarding/Screen1Welcome';
 import Screen2Profile from './src/screens/Onboarding/Screen2Profile';
 import Screen3Challenges from './src/screens/Onboarding/Screen3Challenges';
 import Screen4Research from './src/screens/Onboarding/Screen4Research';
-import Home from './src/screens/Home';
-import TimeWise from './src/screens/Modules/TimeWise';
-import WeeklyCheckIn from './src/screens/Research/WeeklyCheckIn';
 
-// Placeholder for modules not yet built
-function ComingSoon({ route, navigation }) {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background, padding: 28 }}>
-      <Text style={{ fontSize: 48, marginBottom: 16 }}>🚧</Text>
-      <Text style={{ fontSize: 24, fontWeight: '800', color: colors.text, marginBottom: 8 }}>
-        {route.name.replace('Placeholder', '')} Coming Soon
-      </Text>
-      <Text style={{ fontSize: 16, color: colors.textLight, textAlign: 'center', lineHeight: 24 }}>
-        This module is under construction. TimeWise is available now.
-      </Text>
-      <Text
-        style={{ marginTop: 24, fontSize: 16, color: colors.primary, fontWeight: '700' }}
-        onPress={() => navigation.goBack()}
-      >
-        ← Back
-      </Text>
-    </View>
-  );
-}
+// Main screens
+import Home from './src/screens/Home';
+import WeeklyCheckIn from './src/screens/Research/WeeklyCheckIn';
+import MorningRoutine from './src/screens/MorningRoutine';
+import Progress from './src/screens/Progress';
+import Admin from './src/screens/Admin';
+
+// All 6 modules
+import TimeWise from './src/screens/Modules/TimeWise';
+import PlanForward from './src/screens/Modules/PlanForward';
+import FocusControl from './src/screens/Modules/FocusControl';
+import MemoryBank from './src/screens/Modules/MemoryBank';
+import MoodBridge from './src/screens/Modules/MoodBridge';
+import ConfidenceCore from './src/screens/Modules/ConfidenceCore';
+
+// Weekly Planner
+import WeeklyPlanner from './src/screens/WeeklyPlanner';
+import AddTask from './src/screens/WeeklyPlanner/AddTask';
+import WeeklyReview from './src/screens/WeeklyPlanner/WeeklyReview';
 
 const Stack = createNativeStackNavigator();
+
+const moduleHeader = {
+  headerShown: true,
+  headerTitle: '',
+  headerBackTitle: '',
+  headerShadowVisible: false,
+  headerStyle: { backgroundColor: '#F9F9F9' },
+  headerTintColor: '#5B5EA6',
+};
 
 export default function App() {
   const { onboardingComplete, hydrate } = useStore(s => ({
@@ -64,14 +69,8 @@ export default function App() {
     <SafeAreaProvider>
       <StatusBar style="auto" />
       <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-            animation: 'slide_from_right',
-          }}
-        >
+        <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
           {!onboardingComplete ? (
-            // Onboarding flow
             <>
               <Stack.Screen name="Screen1Welcome" component={Screen1Welcome} />
               <Stack.Screen name="Screen2Profile" component={Screen2Profile} />
@@ -79,16 +78,21 @@ export default function App() {
               <Stack.Screen name="Screen4Research" component={Screen4Research} />
             </>
           ) : (
-            // Main app
             <>
               <Stack.Screen name="Home" component={Home} />
-              <Stack.Screen name="TimeWise" component={TimeWise} />
-              <Stack.Screen name="WeeklyCheckIn" component={WeeklyCheckIn} />
-              {/* Stage 2+ modules — placeholders */}
-              <Stack.Screen name="PlanForwardPlaceholder" component={ComingSoon} />
-              <Stack.Screen name="FocusControlPlaceholder" component={ComingSoon} />
-              <Stack.Screen name="MoodBridgePlaceholder" component={ComingSoon} />
-              <Stack.Screen name="ConfidenceCorePlaceholder" component={ComingSoon} />
+              <Stack.Screen name="WeeklyCheckIn" component={WeeklyCheckIn} options={moduleHeader} />
+              <Stack.Screen name="TimeWise" component={TimeWise} options={moduleHeader} />
+              <Stack.Screen name="PlanForwardPlaceholder" component={PlanForward} options={moduleHeader} />
+              <Stack.Screen name="FocusControlPlaceholder" component={FocusControl} options={moduleHeader} />
+              <Stack.Screen name="MoodBridgePlaceholder" component={MoodBridge} options={moduleHeader} />
+              <Stack.Screen name="ConfidenceCorePlaceholder" component={ConfidenceCore} options={moduleHeader} />
+              <Stack.Screen name="MemoryBankPlaceholder" component={MemoryBank} options={moduleHeader} />
+              <Stack.Screen name="WeeklyPlanner" component={WeeklyPlanner} options={moduleHeader} />
+              <Stack.Screen name="AddTask" component={AddTask} options={{ ...moduleHeader, headerShown: false }} />
+              <Stack.Screen name="WeeklyReview" component={WeeklyReview} options={{ ...moduleHeader, headerShown: false }} />
+              <Stack.Screen name="MorningRoutine" component={MorningRoutine} options={moduleHeader} />
+              <Stack.Screen name="Progress" component={Progress} options={moduleHeader} />
+              <Stack.Screen name="Admin" component={Admin} options={moduleHeader} />
             </>
           )}
         </Stack.Navigator>

@@ -3,13 +3,60 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } fr
 import { useStore } from '../../store';
 import { colors } from '../../theme';
 
-const MODULE_CONFIG = {
-  time:       { key: 'TimeWise',       label: 'TimeWise',       icon: '⏱', mins: '8 min',  route: 'TimeWise' },
-  initiation: { key: 'PlanForward',    label: 'PlanForward',    icon: '📋', mins: '6 min',  route: 'PlanForwardPlaceholder' },
-  planning:   { key: 'PlanForward',    label: 'PlanForward',    icon: '📋', mins: '6 min',  route: 'PlanForwardPlaceholder' },
-  focus:      { key: 'FocusControl',   label: 'FocusControl',   icon: '🎯', mins: '5 min',  route: 'FocusControlPlaceholder' },
-  emotion:    { key: 'MoodBridge',     label: 'MoodBridge',     icon: '🌊', mins: '4 min',  route: 'MoodBridgePlaceholder' },
-  confidence: { key: 'ConfidenceCore', label: 'ConfidenceCore', icon: '⚡', mins: '4 min',  route: 'ConfidenceCorePlaceholder' },
+const ALL_MODULES = [
+  {
+    key: 'time',
+    label: 'TimeWise',
+    icon: '⏱',
+    route: 'TimeWise',
+    desc: 'Train your internal clock',
+    goal: 'Accuracy coefficient → 0.85+',
+  },
+  {
+    key: 'planning',
+    label: 'Weekly Planner',
+    icon: '📋',
+    route: 'WeeklyPlanner',
+    desc: 'Plan tasks before they sneak up',
+    goal: 'Add tasks, schedule steps, review weekly',
+  },
+  {
+    key: 'focus',
+    label: 'FocusControl',
+    icon: '🎯',
+    route: 'FocusControlPlaceholder',
+    desc: 'Stop impulses before they happen',
+    goal: 'Hit rate → 90%+, false alarms → 0',
+  },
+  {
+    key: 'memory',
+    label: 'MemoryBank',
+    icon: '🧠',
+    route: 'MemoryBankPlaceholder',
+    desc: 'Hold more in your working memory',
+    goal: 'Digit span → level 6+',
+  },
+  {
+    key: 'emotion',
+    label: 'MoodBridge',
+    icon: '🌊',
+    route: 'MoodBridgePlaceholder',
+    desc: 'Regulate emotions before they derail you',
+    goal: 'Mood improves from pre to post session',
+  },
+  {
+    key: 'confidence',
+    label: 'ConfidenceCore',
+    icon: '⚡',
+    route: 'ConfidenceCorePlaceholder',
+    desc: 'Build belief in your own capability',
+    goal: 'Win archive grows every session',
+  },
+];
+
+const CHALLENGE_TO_KEY = {
+  time: 'time', initiation: 'planning', planning: 'planning',
+  focus: 'focus', emotion: 'emotion', confidence: 'confidence',
 };
 
 export default function Home({ navigation }) {
@@ -21,84 +68,62 @@ export default function Home({ navigation }) {
     weeklyCheckIns: s.weeklyCheckIns,
   }));
 
-  // Build today's session: user's top 2 challenges + TimeWise always included
-  const sessionModules = (() => {
-    const keys = new Set(['time']); // TimeWise always in Stage 1
-    topChallenges.forEach(c => keys.add(c));
-    return [...keys].slice(0, 3).map(k => MODULE_CONFIG[k]).filter(Boolean);
-  })();
+  const todayKeys = new Set(['time']);
+  topChallenges.forEach(c => { if (CHALLENGE_TO_KEY[c]) todayKeys.add(CHALLENGE_TO_KEY[c]); });
 
-  // Check if weekly check-in is due (Sunday, or no check-in this week)
+  const todayModules = ALL_MODULES.filter(m => todayKeys.has(m.key));
+
   const isCheckInDue = (() => {
     if (weeklyCheckIns.length === 0) return true;
-    const lastCheckIn = new Date(weeklyCheckIns[weeklyCheckIns.length - 1].date);
-    const daysSince = (Date.now() - lastCheckIn.getTime()) / (1000 * 60 * 60 * 24);
-    return daysSince >= 6;
+    const last = new Date(weeklyCheckIns[weeklyCheckIns.length - 1].date);
+    return (Date.now() - last.getTime()) / (1000 * 60 * 60 * 24) >= 6;
   })();
 
   const greeting = (() => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    const h = new Date().getHours();
+    if (h < 12) return 'Morning';
+    if (h < 17) return 'Afternoon';
+    return 'Evening';
   })();
+
+  function ModuleRow({ mod, today }) {
+    return (
+      <TouchableOpacity
+        style={[styles.moduleRow, today && styles.moduleRowToday]}
+        onPress={() => navigation.navigate(mod.route)}
+      >
+        <Text style={styles.moduleIcon}>{mod.icon}</Text>
+        <View style={styles.moduleInfo}>
+          <View style={styles.moduleNameRow}>
+            <Text style={styles.moduleName}>{mod.label}</Text>
+            {today && <View style={styles.todayBadge}><Text style={styles.todayBadgeText}>Today</Text></View>}
+          </View>
+          <Text style={styles.moduleDesc}>{mod.desc}</Text>
+          <Text style={styles.moduleGoal}>🎯 {mod.goal}</Text>
+        </View>
+        <Text style={styles.arrow}>→</Text>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.greeting}>
-            {greeting}{userNickname ? `, ${userNickname}` : ''}!
-          </Text>
+          <View>
+            <Text style={styles.greeting}>{greeting}{userNickname ? `, ${userNickname}` : ''}</Text>
+            <Text style={styles.subGreeting}>NeuroFocus</Text>
+          </View>
           {currentStreak > 0 && (
             <View style={styles.streak}>
-              <Text style={styles.streakText}>🔥 {currentStreak}-day streak</Text>
+              <Text style={styles.streakText}>🔥 {currentStreak}</Text>
             </View>
           )}
         </View>
 
-        {/* Today's session card */}
-        <View style={styles.sessionCard}>
-          <Text style={styles.sessionTitle}>Today's session</Text>
-          <Text style={styles.sessionSubtitle}>
-            ~{sessionModules.reduce((sum, m) => sum + parseInt(m.mins), 0)} minutes total
-          </Text>
-
-          {sessionModules.map((mod, i) => (
-            <TouchableOpacity
-              key={i}
-              style={styles.moduleRow}
-              onPress={() => navigation.navigate(mod.route)}
-              accessibilityLabel={`Start ${mod.label} module`}
-            >
-              <Text style={styles.moduleIcon}>{mod.icon}</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.moduleName}>{mod.label}</Text>
-                <Text style={styles.moduleMins}>{mod.mins}</Text>
-              </View>
-              <Text style={styles.moduleArrow}>→</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Weekly check-in banner */}
-        {isCheckInDue && (
-          <TouchableOpacity
-            style={styles.checkInBanner}
-            onPress={() => navigation.navigate('WeeklyCheckIn')}
-          >
-            <Text style={styles.checkInIcon}>📊</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.checkInTitle}>Weekly check-in</Text>
-              <Text style={styles.checkInSub}>3 quick questions about your week</Text>
-            </View>
-            <Text style={styles.moduleArrow}>→</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Stats row */}
+        {/* Stats */}
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>{totalSessions}</Text>
@@ -110,14 +135,48 @@ export default function Home({ navigation }) {
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>{currentStreak}</Text>
-            <Text style={styles.statLabel}>Day streak</Text>
+            <Text style={styles.statLabel}>Streak</Text>
           </View>
         </View>
 
-        {/* Stage 1 note */}
-        <Text style={styles.stageNote}>
-          Stage 1 build · More modules coming soon
-        </Text>
+        {/* Weekly check-in */}
+        {isCheckInDue && (
+          <TouchableOpacity style={styles.checkInBanner} onPress={() => navigation.navigate('WeeklyCheckIn')}>
+            <Text style={styles.moduleIcon}>📊</Text>
+            <View style={styles.moduleInfo}>
+              <Text style={[styles.moduleName, { color: colors.primary }]}>Weekly check-in</Text>
+              <Text style={styles.moduleDesc}>3 questions about homework, class, and mornings</Text>
+            </View>
+            <Text style={styles.arrow}>→</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Today */}
+        <Text style={styles.sectionLabel}>TODAY</Text>
+        <View style={styles.card}>
+          {todayModules.map((mod, i) => (
+            <View key={mod.key}>
+              <ModuleRow mod={mod} today />
+              {i < todayModules.length - 1 && <View style={styles.divider} />}
+            </View>
+          ))}
+        </View>
+
+        {/* Quick access */}
+        <View style={styles.quickRow}>
+          <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('MorningRoutine')}>
+            <Text style={styles.quickIcon}>☀️</Text>
+            <Text style={styles.quickLabel}>Morning</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('Progress')}>
+            <Text style={styles.quickIcon}>📈</Text>
+            <Text style={styles.quickLabel}>Progress</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('Admin')}>
+            <Text style={styles.quickIcon}>🔒</Text>
+            <Text style={styles.quickLabel}>Admin</Text>
+          </TouchableOpacity>
+        </View>
 
       </ScrollView>
     </SafeAreaView>
@@ -126,56 +185,47 @@ export default function Home({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scroll: { padding: 24, paddingBottom: 40 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  greeting: { fontSize: 24, fontWeight: '800', color: colors.text },
+  scroll: { padding: 18, paddingBottom: 36 },
+
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
+  greeting: { fontSize: 22, fontWeight: '800', color: colors.text },
+  subGreeting: { fontSize: 13, color: colors.textLight, marginTop: 1 },
   streak: { backgroundColor: colors.primaryLight, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-  streakText: { fontSize: 14, color: colors.primary, fontWeight: '700' },
-  sessionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#EBEBEB',
-  },
-  sessionTitle: { fontSize: 18, fontWeight: '800', color: colors.text, marginBottom: 4 },
-  sessionSubtitle: { fontSize: 13, color: colors.textLight, marginBottom: 16 },
-  moduleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderColor: '#F0F0F0',
-  },
-  moduleIcon: { fontSize: 22, marginRight: 14 },
-  moduleName: { fontSize: 16, fontWeight: '700', color: colors.text },
-  moduleMins: { fontSize: 13, color: colors.textLight, marginTop: 2 },
-  moduleArrow: { fontSize: 20, color: colors.primary, fontWeight: '700' },
+  streakText: { fontSize: 15, color: colors.primary, fontWeight: '800' },
+
+  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
+  statBox: { flex: 1, backgroundColor: '#fff', borderRadius: 10, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: '#EBEBEB' },
+  statValue: { fontSize: 22, fontWeight: '900', color: colors.text },
+  statLabel: { fontSize: 11, color: colors.textLight, marginTop: 2 },
+
   checkInBanner: {
-    backgroundColor: colors.primaryLight,
-    borderRadius: 14,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight, borderRadius: 14, borderWidth: 1.5,
+    borderColor: colors.primary, flexDirection: 'row', alignItems: 'center',
+    padding: 14, marginBottom: 14,
   },
-  checkInIcon: { fontSize: 22, marginRight: 14 },
-  checkInTitle: { fontSize: 16, fontWeight: '700', color: colors.primary },
-  checkInSub: { fontSize: 13, color: colors.primary, opacity: 0.8 },
-  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 24 },
-  statBox: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#EBEBEB',
+
+  sectionLabel: {
+    fontSize: 11, fontWeight: '800', color: colors.textLight,
+    letterSpacing: 1.2, marginBottom: 8, marginTop: 4,
   },
-  statValue: { fontSize: 28, fontWeight: '900', color: colors.text },
-  statLabel: { fontSize: 12, color: colors.textLight, marginTop: 4 },
-  stageNote: { textAlign: 'center', fontSize: 12, color: '#CCC', fontStyle: 'italic' },
+
+  card: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#EBEBEB', marginBottom: 16, overflow: 'hidden' },
+
+  moduleRow: { flexDirection: 'row', alignItems: 'center', padding: 14 },
+  moduleRowToday: { backgroundColor: '#FAFAFE' },
+  moduleIcon: { fontSize: 22, marginRight: 12, width: 30, textAlign: 'center' },
+  moduleInfo: { flex: 1 },
+  moduleNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 },
+  moduleName: { fontSize: 15, fontWeight: '800', color: colors.text },
+  moduleDesc: { fontSize: 13, color: colors.textLight, marginBottom: 3 },
+  moduleGoal: { fontSize: 11, color: colors.primary, fontWeight: '600' },
+  todayBadge: { backgroundColor: colors.primary, paddingHorizontal: 7, paddingVertical: 2, borderRadius: 10 },
+  todayBadgeText: { fontSize: 10, color: '#fff', fontWeight: '700' },
+  arrow: { fontSize: 18, color: colors.primary, fontWeight: '700', marginLeft: 8 },
+  divider: { height: 1, backgroundColor: '#F0F0F0', marginLeft: 56 },
+
+  quickRow: { flexDirection: 'row', gap: 10 },
+  quickBtn: { flex: 1, backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#EBEBEB', padding: 12, alignItems: 'center' },
+  quickIcon: { fontSize: 20, marginBottom: 4 },
+  quickLabel: { fontSize: 12, fontWeight: '700', color: colors.text },
 });

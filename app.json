@@ -29,7 +29,8 @@
           "icon": "./assets/notification-icon.png",
           "color": "#5B5EA6"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ]
   }
 }

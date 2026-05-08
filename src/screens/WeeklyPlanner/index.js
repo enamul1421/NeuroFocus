@@ -77,16 +77,17 @@ export default function WeeklyPlanner({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Weekly Planner</Text>
-          <Text style={styles.subtitle}>{totalActive} active task{totalActive !== 1 ? 's' : ''}</Text>
-        </View>
+        <Text style={styles.title}>Weekly Planner</Text>
+        <Text style={styles.subtitle}>{totalActive} active task{totalActive !== 1 ? 's' : ''}</Text>
         <View style={styles.headerButtons}>
+          <TouchableOpacity style={styles.calBtn} onPress={() => navigation.navigate('WeeklyCalendar')}>
+            <Text style={styles.calBtnText}>📅 Schedule View</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.reviewBtn} onPress={() => navigation.navigate('WeeklyReview')}>
-            <Text style={styles.reviewBtnText}>Review</Text>
+            <Text style={styles.reviewBtnText}>Score</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.addBtn} onPress={() => navigation.navigate('AddTask')}>
-            <Text style={styles.addBtnText}>+ Add</Text>
+            <Text style={styles.addBtnText}>+ New Task</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -197,13 +198,15 @@ export default function WeeklyPlanner({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#EBEBEB' },
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#EBEBEB' },
   title: { fontSize: 24, fontWeight: '800', color: colors.text },
-  subtitle: { fontSize: 14, color: colors.textLight, marginTop: 2 },
+  subtitle: { fontSize: 14, color: colors.textLight, marginTop: 2, marginBottom: 10 },
   headerButtons: { flexDirection: 'row', gap: 8 },
+  calBtn: { borderWidth: 1.5, borderColor: '#E0E0E0', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
+  calBtnText: { fontSize: 13, color: colors.text, fontWeight: '700' },
   reviewBtn: { borderWidth: 1.5, borderColor: colors.primary, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
   reviewBtnText: { fontSize: 14, color: colors.primary, fontWeight: '700' },
-  addBtn: { backgroundColor: colors.primary, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
+  addBtn: { backgroundColor: colors.primary, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, flex: 1, alignItems: 'center' },
   addBtnText: { fontSize: 14, color: '#fff', fontWeight: '700' },
   content: { padding: 16 },
   emptyState: { alignItems: 'center', paddingVertical: 48 },

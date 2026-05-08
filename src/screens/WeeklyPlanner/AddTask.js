@@ -9,7 +9,19 @@ import { colors } from '../../theme';
 import { scheduleStepNotification, suggestStepDates } from './utils';
 import * as Notifications from 'expo-notifications';
 
+const TEMPLATE_GROUPS = [
+  {
+    label: '📚 Academics',
+    keys: ['test', 'quiz', 'essay', 'lab', 'presentation', 'group', 'sciencefair', 'reading', 'other'],
+  },
+  {
+    label: '🌟 Life & Activities',
+    keys: ['appointment', 'chore', 'social', 'project', 'sports', 'volunteer', 'other'],
+  },
+];
+
 const TASK_TEMPLATES = {
+  // ── School ──────────────────────────────────────────────────────────────
   test:         { icon: '📝', label: 'Test / Exam',           defaultDays: 7,  totalHours: 7,  steps: [{ name: "Find out what's covered", pct: 5 }, { name: 'Gather notes and materials', pct: 10 }, { name: 'First full review pass', pct: 25 }, { name: 'Active recall practice', pct: 35 }, { name: 'Go back to weak areas', pct: 20 }, { name: 'Final review + good sleep', pct: 5 }] },
   quiz:         { icon: '✏️', label: 'Quiz',                  defaultDays: 3,  totalHours: 2,  steps: [{ name: 'Check what the quiz covers', pct: 10 }, { name: 'Quick review of notes', pct: 40 }, { name: 'Practice key concepts', pct: 35 }, { name: 'Final check the night before', pct: 15 }] },
   essay:        { icon: '📄', label: 'Essay / Research Paper', defaultDays: 14, totalHours: 10, steps: [{ name: 'Read the prompt carefully', pct: 5 }, { name: 'Research and gather sources', pct: 25 }, { name: 'Create an outline', pct: 10 }, { name: 'Write the first draft', pct: 30 }, { name: 'Revise and improve', pct: 20 }, { name: 'Proofread and format', pct: 10 }] },
@@ -18,6 +30,13 @@ const TASK_TEMPLATES = {
   group:        { icon: '👥', label: 'Group Project',          defaultDays: 14, totalHours: 12, steps: [{ name: 'Meet and divide roles', pct: 10 }, { name: 'Complete your research', pct: 30 }, { name: 'Build your section', pct: 30 }, { name: 'Combine with group', pct: 15 }, { name: 'Polish and rehearse', pct: 15 }] },
   sciencefair:  { icon: '🧪', label: 'Science Fair',           defaultDays: 28, totalHours: 20, steps: [{ name: 'Choose topic and hypothesis', pct: 10 }, { name: 'Background research', pct: 20 }, { name: 'Design and gather materials', pct: 10 }, { name: 'Conduct experiment (2+ trials)', pct: 25 }, { name: 'Analyze data and write report', pct: 20 }, { name: 'Build display board', pct: 10 }, { name: 'Practice presentation', pct: 5 }] },
   reading:      { icon: '📚', label: 'Reading Assignment',     defaultDays: 5,  totalHours: 3,  steps: [{ name: 'Read assigned pages', pct: 60 }, { name: 'Take notes on key points', pct: 20 }, { name: 'Review for discussion', pct: 20 }] },
+  // ── Life & Activities ────────────────────────────────────────────────────
+  appointment:  { icon: '🏥', label: 'Doctor / Appointment',  defaultDays: 7,  totalHours: 1,  steps: [{ name: 'Confirm date, time, and location', pct: 10 }, { name: 'Write down questions to ask', pct: 20 }, { name: 'Arrange ride or transport', pct: 20 }, { name: 'Attend the appointment', pct: 30 }, { name: 'Follow up on any next steps', pct: 20 }] },
+  chore:        { icon: '🧹', label: 'Chore / Home Task',      defaultDays: 3,  totalHours: 2,  steps: [{ name: 'Gather supplies needed', pct: 10 }, { name: 'Do the first part', pct: 35 }, { name: 'Do the second part', pct: 35 }, { name: 'Final check and put things away', pct: 20 }] },
+  social:       { icon: '🎉', label: 'Event / Social Plan',    defaultDays: 5,  totalHours: 2,  steps: [{ name: 'RSVP and confirm details', pct: 15 }, { name: 'Buy or prepare gift / what to bring', pct: 30 }, { name: 'Arrange transport', pct: 15 }, { name: 'Attend the event', pct: 30 }, { name: 'Send thank-you or follow up', pct: 10 }] },
+  project:      { icon: '🎨', label: 'Personal Project',       defaultDays: 14, totalHours: 6,  steps: [{ name: 'Define what "done" looks like', pct: 10 }, { name: 'Gather materials or tools', pct: 15 }, { name: 'Work session 1', pct: 25 }, { name: 'Work session 2', pct: 25 }, { name: 'Work session 3', pct: 20 }, { name: 'Finish and share', pct: 5 }] },
+  sports:       { icon: '⚽', label: 'Sports / Extracurricular', defaultDays: 2, totalHours: 1,  steps: [{ name: 'Check schedule and confirm time', pct: 15 }, { name: 'Pack gear and uniform', pct: 25 }, { name: 'Arrange ride', pct: 20 }, { name: 'Attend practice or game', pct: 30 }, { name: 'Rest and recovery', pct: 10 }] },
+  volunteer:    { icon: '🤝', label: 'Volunteer / Service',    defaultDays: 7,  totalHours: 3,  steps: [{ name: 'Confirm shift time and location', pct: 10 }, { name: 'Prepare what to bring', pct: 15 }, { name: 'Arrange transport', pct: 15 }, { name: 'Complete the volunteer session', pct: 40 }, { name: 'Log hours and write reflection', pct: 20 }] },
   other:        { icon: '📋', label: 'Something else',         defaultDays: 7,  totalHours: 5,  steps: [{ name: 'Step 1', pct: 33 }, { name: 'Step 2', pct: 33 }, { name: 'Step 3', pct: 34 }] },
 };
 
@@ -279,14 +298,22 @@ export default function AddTask({ navigation }) {
           </TouchableOpacity>
           <Text style={styles.headline}>What type of task?</Text>
           <Text style={styles.body}>Pick the closest match to get the right step sequence.</Text>
-          <View style={styles.typeGrid}>
-            {Object.entries(TASK_TEMPLATES).map(([key, t]) => (
-              <TouchableOpacity key={key} style={styles.typeCard} onPress={() => loadTemplate(key)}>
-                <Text style={styles.typeIcon}>{t.icon}</Text>
-                <Text style={styles.typeLabel}>{t.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {TEMPLATE_GROUPS.map(group => (
+            <View key={group.label} style={styles.groupBlock}>
+              <Text style={styles.groupLabel}>{group.label}</Text>
+              <View style={styles.typeGrid}>
+                {group.keys.map(key => {
+                  const t = TASK_TEMPLATES[key];
+                  return (
+                    <TouchableOpacity key={key} style={styles.typeCard} onPress={() => loadTemplate(key)}>
+                      <Text style={styles.typeIcon}>{t.icon}</Text>
+                      <Text style={styles.typeLabel}>{t.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          ))}
         </ScrollView>
       </SafeAreaView>
     );
@@ -631,10 +658,12 @@ const styles = StyleSheet.create({
   dateButtonText: { fontSize: 15, color: colors.text, fontWeight: '600' },
   dateButtonEdit: { fontSize: 13, color: colors.primary },
 
-  typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 8 },
-  typeCard: { width: '47%', backgroundColor: '#fff', borderRadius: 14, borderWidth: 1.5, borderColor: '#E0E0E0', padding: 16, alignItems: 'center', gap: 8 },
-  typeIcon: { fontSize: 32 },
-  typeLabel: { fontSize: 13, fontWeight: '700', color: colors.text, textAlign: 'center' },
+  groupBlock: { marginTop: 16 },
+  groupLabel: { fontSize: 13, fontWeight: '800', color: colors.textLight, letterSpacing: 0.5, marginBottom: 10 },
+  typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  typeCard: { width: '31%', backgroundColor: '#fff', borderRadius: 12, borderWidth: 1.5, borderColor: '#E0E0E0', paddingVertical: 12, paddingHorizontal: 6, alignItems: 'center', gap: 5 },
+  typeIcon: { fontSize: 24 },
+  typeLabel: { fontSize: 10, fontWeight: '700', color: colors.text, textAlign: 'center' },
 
   hoursRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   hoursInput: { borderWidth: 1.5, borderColor: '#E0E0E0', borderRadius: 10, padding: 12, fontSize: 18, fontWeight: '700', color: colors.text, backgroundColor: '#fff', width: 80, textAlign: 'center' },

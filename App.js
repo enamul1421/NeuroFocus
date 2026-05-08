@@ -33,6 +33,7 @@ import ConfidenceCore from './src/screens/Modules/ConfidenceCore';
 import WeeklyPlanner from './src/screens/WeeklyPlanner';
 import AddTask from './src/screens/WeeklyPlanner/AddTask';
 import WeeklyReview from './src/screens/WeeklyPlanner/WeeklyReview';
+import WeeklyCalendar from './src/screens/WeeklyPlanner/WeeklyCalendar';
 
 const Stack = createNativeStackNavigator();
 
@@ -90,6 +91,7 @@ export default function App() {
               <Stack.Screen name="WeeklyPlanner" component={WeeklyPlanner} options={moduleHeader} />
               <Stack.Screen name="AddTask" component={AddTask} options={{ ...moduleHeader, headerShown: false }} />
               <Stack.Screen name="WeeklyReview" component={WeeklyReview} options={{ ...moduleHeader, headerShown: false }} />
+              <Stack.Screen name="WeeklyCalendar" component={WeeklyCalendar} options={{ ...moduleHeader, headerShown: false }} />
               <Stack.Screen name="MorningRoutine" component={MorningRoutine} options={moduleHeader} />
               <Stack.Screen name="Progress" component={Progress} options={moduleHeader} />
               <Stack.Screen name="Admin" component={Admin} options={moduleHeader} />

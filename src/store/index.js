@@ -94,6 +94,7 @@ export const useStore = create((set, get) => ({
 
   // FocusControl
   focusControlSessions: [],
+  focusNogoRatio: 0.4,
 
   addFocusControlSession: (session) => {
     set({
@@ -103,14 +104,25 @@ export const useStore = create((set, get) => ({
     get().persist();
   },
 
+  setFocusNogoRatio: (ratio) => {
+    set({ focusNogoRatio: ratio });
+    get().persist();
+  },
+
   // MemoryBank
   memoryBankSessions: [],
+  memoryBankLevels: { digitsFwd: 3, digitsBwd: 3, spatial: 3 },
 
   addMemoryBankSession: (session) => {
     set({
       memoryBankSessions: [...get().memoryBankSessions, session],
       totalSessions: get().totalSessions + 1,
     });
+    get().persist();
+  },
+
+  setMemoryBankLevel: (mode, level) => {
+    set({ memoryBankLevels: { ...get().memoryBankLevels, [mode]: level } });
     get().persist();
   },
 
@@ -189,7 +201,9 @@ export const useStore = create((set, get) => ({
       timeWiseLevel: s.timeWiseLevel,
       planForwardSessions: s.planForwardSessions,
       focusControlSessions: s.focusControlSessions,
+      focusNogoRatio: s.focusNogoRatio,
       memoryBankSessions: s.memoryBankSessions,
+      memoryBankLevels:   s.memoryBankLevels,
       moodBridgeSessions: s.moodBridgeSessions,
       weeklyWins: s.weeklyWins,
       weeklyCheckIns: s.weeklyCheckIns,

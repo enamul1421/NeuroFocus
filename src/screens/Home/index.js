@@ -162,6 +162,17 @@ export default function Home({ navigation }) {
           ))}
         </View>
 
+        {/* All modules */}
+        <Text style={styles.sectionLabel}>ALL MODULES</Text>
+        <View style={styles.card}>
+          {ALL_MODULES.map((mod, i) => (
+            <View key={mod.key}>
+              <ModuleRow mod={mod} today={todayKeys.has(mod.key)} />
+              {i < ALL_MODULES.length - 1 && <View style={styles.divider} />}
+            </View>
+          ))}
+        </View>
+
         {/* Quick access */}
         <View style={styles.quickRow}>
           <TouchableOpacity style={styles.quickBtn} onPress={() => navigation.navigate('MorningRoutine')}>

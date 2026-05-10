@@ -4,6 +4,8 @@ import {
   ScrollView, TextInput, Animated,
 } from 'react-native';
 import BodyDiagram from '../../../components/BodyDiagram';
+import SpeakButton, { speak, stopSpeech } from '../../../components/SpeakButton';
+import AnimatedGuide from '../../../components/AnimatedGuide';
 import { useStore } from '../../../store';
 import { colors } from '../../../theme';
 import { logSession } from '../../../services/logger';
@@ -186,6 +188,7 @@ export default function MoodBridge({ navigation }) {
 
   function runBodyRegion(idx) {
     if (idx >= BODY_REGIONS.length) {
+      stopSpeech();
       setPhase(P.POST_EMOJI);
       return;
     }
@@ -194,6 +197,8 @@ export default function MoodBridge({ navigation }) {
     Animated.timing(scanAnim, {
       toValue: 0, duration: BODY_SCAN_REGION_MS, useNativeDriver: false,
     }).start();
+    // Auto-narrate the region prompt
+    speak(BODY_REGIONS[idx].label + '. ' + BODY_REGIONS[idx].prompt);
     timerRef.current = setTimeout(() => runBodyRegion(idx + 1), BODY_SCAN_REGION_MS);
   }
 
@@ -244,6 +249,11 @@ export default function MoodBridge({ navigation }) {
           <Text style={styles.headline}>
             {isPost ? 'How do you feel now?' : 'How are you feeling?'}
           </Text>
+          {!isPost && (
+            <View style={styles.goalCard}>
+              <Text style={styles.goalText}>🎯 Goal: Mood improves from pre to post session</Text>
+            </View>
+          )}
           <Text style={styles.body}>Tap the closest match.</Text>
           <View style={styles.emojiRow}>
             {EMOJIS.map(e => (
@@ -439,12 +449,16 @@ export default function MoodBridge({ navigation }) {
             <View style={[styles.exProgressFill, { width: `${((exStep) / GROUNDING_STEPS.length) * 100}%` }]} />
           </View>
           <View style={styles.content}>
-            <Text style={styles.exTitle}>5-4-3-2-1 Grounding</Text>
+            <View style={styles.exTitleRow}>
+              <Text style={styles.exTitle}>5-4-3-2-1 Grounding</Text>
+              <SpeakButton text={step.prompt} size="sm" />
+            </View>
+            <AnimatedGuide placeholder="grounding" label="Notice your surroundings" width={140} height={140} />
             <View style={styles.groundingCard}>
               <Text style={styles.groundingNum}>{step.n}</Text>
               <Text style={styles.groundingPrompt}>{step.prompt}</Text>
             </View>
-            <Text style={styles.groundingHint}>Take your time. No need to write them down.</Text>
+            <Text style={styles.groundingHint}>Take your time.</Text>
             <TouchableOpacity
               style={styles.primaryBtn}
               onPress={() => {
@@ -561,7 +575,10 @@ export default function MoodBridge({ navigation }) {
             <Text style={styles.exTitle}>Positive Reappraisal</Text>
             <Text style={styles.exSubtitle}>Step {exStep + 1} of {REAPPRAISAL_PROMPTS.length}</Text>
             <View style={styles.reappraisalCard}>
-              <Text style={styles.reappraisalPrompt}>{prompt}</Text>
+              <View style={styles.promptRow}>
+                <Text style={[styles.reappraisalPrompt, { flex: 1 }]}>{prompt}</Text>
+                <SpeakButton text={prompt} size="sm" />
+              </View>
               <TextInput
                 style={styles.reappraisalInput}
                 multiline
@@ -736,6 +753,7 @@ const styles = StyleSheet.create({
   suggestedTagText: { fontSize: 10, color: '#fff', fontWeight: '700' },
 
   exTitle:    { fontSize: 22, fontWeight: '800', color: colors.text, textAlign: 'center', marginTop: 16, marginBottom: 4 },
+  exTitleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 16, marginBottom: 4 },
   exSubtitle: { fontSize: 13, color: colors.textLight, textAlign: 'center', marginBottom: 16 },
   exProgressBg:   { height: 3, backgroundColor: '#F0F0F0' },
   exProgressFill: { height: 3, backgroundColor: colors.primary },
@@ -765,6 +783,7 @@ const styles = StyleSheet.create({
   labelAffirmText: { fontSize: 14, color: colors.text, lineHeight: 22 },
 
   // Reappraisal
+  promptRow:         { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 12 },
   reappraisalCard:   { backgroundColor: '#fff', borderRadius: 14, padding: 18, borderWidth: 1.5, borderColor: '#E0E0E0', marginBottom: 20 },
   reappraisalPrompt: { fontSize: 16, fontWeight: '700', color: colors.text, lineHeight: 24, marginBottom: 14 },
   reappraisalInput:  { borderWidth: 1.5, borderColor: '#E0E0E0', borderRadius: 10, padding: 12, fontSize: 15, color: colors.text, minHeight: 80, textAlignVertical: 'top' },
@@ -794,6 +813,8 @@ const styles = StyleSheet.create({
   connectionCard: { backgroundColor: colors.primaryLight, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.primary + '40' },
   connectionText: { fontSize: 14, color: colors.text, lineHeight: 22 },
 
+  goalCard: { backgroundColor: colors.primaryLight, borderRadius: 10, padding: 10, marginBottom: 12, borderWidth: 1, borderColor: colors.primary + '40' },
+  goalText: { fontSize: 13, color: colors.primary, fontWeight: '700' },
   primaryBtn:        { backgroundColor: colors.primary, padding: 18, borderRadius: 14, alignItems: 'center', marginHorizontal: 24, marginBottom: 12 },
   primaryBtnDisabled:{ backgroundColor: '#CCC' },
   primaryBtnText:    { color: '#fff', fontSize: 16, fontWeight: '700' },

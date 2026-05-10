@@ -147,21 +147,39 @@ export const useStore = create((set, get) => ({
 
   // Morning Routine
   morningTasks: [
-    { id: '1', label: 'Wake up & get out of bed', mins: 5 },
-    { id: '2', label: 'Shower or wash face', mins: 10 },
-    { id: '3', label: 'Get dressed', mins: 5 },
-    { id: '4', label: 'Eat breakfast', mins: 10 },
-    { id: '5', label: 'Pack bag', mins: 5 },
+    { id: '1', label: 'Wake up & get out of bed', icon: '⏰', mins: 5 },
+    { id: '2', label: 'Shower or wash face',      icon: '🚿', mins: 10 },
+    { id: '3', label: 'Get dressed',              icon: '👕', mins: 5 },
+    { id: '4', label: 'Eat breakfast',            icon: '🍳', mins: 10 },
+    { id: '5', label: 'Pack bag',                 icon: '🎒', mins: 5 },
+  ],
+  nightBeforeTasks: [
+    { id: 'n1', label: 'Pick outfit for tomorrow',         icon: '👕', mins: 3 },
+    { id: 'n2', label: 'Pack bag & gather everything',     icon: '🎒', mins: 5 },
+    { id: 'n3', label: "Check tomorrow's schedule",        icon: '📅', mins: 2 },
+    { id: 'n4', label: 'Charge phone & devices',           icon: '🔋', mins: 1 },
+    { id: 'n5', label: 'Prepare lunch or snacks',          icon: '🥗', mins: 5 },
   ],
   morningLogs: [],
+  morningNotificationTime: { hour: 7, minute: 0 },
 
   setMorningTasks: (tasks) => {
     set({ morningTasks: tasks });
     get().persist();
   },
 
+  setNightBeforeTasks: (tasks) => {
+    set({ nightBeforeTasks: tasks });
+    get().persist();
+  },
+
   addMorningLog: (log) => {
     set({ morningLogs: [...get().morningLogs, log] });
+    get().persist();
+  },
+
+  setMorningNotificationTime: (hour, minute) => {
+    set({ morningNotificationTime: { hour, minute } });
     get().persist();
   },
 
@@ -208,7 +226,9 @@ export const useStore = create((set, get) => ({
       weeklyWins: s.weeklyWins,
       weeklyCheckIns: s.weeklyCheckIns,
       morningTasks: s.morningTasks,
+      nightBeforeTasks: s.nightBeforeTasks,
       morningLogs: s.morningLogs,
+      morningNotificationTime: s.morningNotificationTime,
       plannerTasks: s.plannerTasks,
       weeklyReviews: s.weeklyReviews,
       reviewNotificationTime: s.reviewNotificationTime,

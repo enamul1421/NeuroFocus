@@ -6,6 +6,8 @@ import {
 import { useStore } from '../../../store';
 import { colors } from '../../../theme';
 import { logSession } from '../../../services/logger';
+import SpeakButton from '../../../components/SpeakButton';
+import AnimatedGuide from '../../../components/AnimatedGuide';
 
 // ── Scenarios ─────────────────────────────────────────────────────────────────
 
@@ -197,39 +199,33 @@ export default function FocusControl({ navigation }) {
 
           <Text style={styles.moduleTag}>🎯 FocusControl</Text>
           <Text style={styles.headline}>Train your mental brake</Text>
-          <Text style={styles.body}>
-            Notifications appear one at a time. Tap the ones worth acting on — ignore the rest.
-            {'\n\n'}This trains the exact same circuit you use to ignore your phone during homework.
-          </Text>
+          <SpeakButton text="Notifications appear. Tap study items. Ignore distractions. Trains the same circuit you use to ignore your phone during homework." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+          <View style={styles.goalCard}>
+            <Text style={styles.goalText}>🎯 Goal: Brake score → 80+ · False alarms under 10%</Text>
+          </View>
+          <AnimatedGuide placeholder="focus" label="Resist distractions" width={90} height={90} style={{ marginTop: 12, marginBottom: 4 }} />
+          <Text style={styles.body}>Tap study items. Ignore distractions.</Text>
 
-          <Text style={styles.exampleLabel}>TAP these — study items:</Text>
-          {GO.slice(0, 2).map(s => (
-            <View key={s.id} style={[styles.notifCard, styles.goCard]}>
-              <Text style={styles.notifIcon}>{s.icon}</Text>
-              <View style={styles.notifText}>
-                <Text style={styles.notifLabel}>{s.label}</Text>
-                <Text style={styles.notifSub}>{s.sub}</Text>
-              </View>
-              <View style={styles.goTag}><Text style={styles.goTagText}>TAP</Text></View>
+          <Text style={styles.exampleLabel}>TAP ✓</Text>
+          <View style={[styles.notifCard, styles.goCard]}>
+            <Text style={styles.notifIcon}>{GO[0].icon}</Text>
+            <View style={styles.notifText}>
+              <Text style={styles.notifLabel}>{GO[0].label}</Text>
             </View>
-          ))}
+            <View style={styles.goTag}><Text style={styles.goTagText}>TAP</Text></View>
+          </View>
 
-          <Text style={[styles.exampleLabel, { marginTop: 14 }]}>IGNORE these — distractions:</Text>
-          {NOGO.slice(0, 2).map(s => (
-            <View key={s.id} style={[styles.notifCard, styles.nogoCard]}>
-              <Text style={styles.notifIcon}>{s.icon}</Text>
-              <View style={styles.notifText}>
-                <Text style={styles.notifLabel}>{s.label}</Text>
-                <Text style={styles.notifSub}>{s.sub}</Text>
-              </View>
-              <View style={styles.nogoTag}><Text style={styles.nogoTagText}>IGNORE</Text></View>
+          <Text style={[styles.exampleLabel, { marginTop: 8 }]}>IGNORE ✗</Text>
+          <View style={[styles.notifCard, styles.nogoCard]}>
+            <Text style={styles.notifIcon}>{NOGO[0].icon}</Text>
+            <View style={styles.notifText}>
+              <Text style={styles.notifLabel}>{NOGO[0].label}</Text>
             </View>
-          ))}
+            <View style={styles.nogoTag}><Text style={styles.nogoTagText}>IGNORE</Text></View>
+          </View>
 
           <View style={styles.ruleCard}>
-            <Text style={styles.ruleItem}>⏱ Each card shows for 1.5 seconds</Text>
-            <Text style={styles.ruleItem}>🎯 25 trials · ~8 minutes</Text>
-            <Text style={styles.ruleItem}>📈 Difficulty adjusts each session</Text>
+            <Text style={styles.ruleItem}>⏱ 1.5s per card · 🎯 25 trials · 📈 Adjusts each session</Text>
           </View>
 
           {lastSession && (
@@ -393,6 +389,9 @@ const styles = StyleSheet.create({
   content: { padding: 24, paddingBottom: 16 },
   backBtn: { marginBottom: 16 },
   backBtnText: { fontSize: 15, color: colors.primary, fontWeight: '600' },
+  headlineRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
+  goalCard: { backgroundColor: colors.primaryLight, borderRadius: 10, padding: 10, marginBottom: 14, borderWidth: 1, borderColor: colors.primary + '40' },
+  goalText: { fontSize: 13, color: colors.primary, fontWeight: '700' },
   moduleTag: { fontSize: 12, fontWeight: '800', color: colors.primary, letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' },
   headline: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 10 },
   body: { fontSize: 15, color: colors.textLight, lineHeight: 22, marginBottom: 20 },

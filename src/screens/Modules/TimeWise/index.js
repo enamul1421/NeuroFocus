@@ -5,6 +5,8 @@ import {
 import { useStore } from '../../../store';
 import { logSession } from '../../../services/logger';
 import { colors } from '../../../theme';
+import SpeakButton from '../../../components/SpeakButton';
+import AnimatedGuide from '../../../components/AnimatedGuide';
 
 const TASKS = [
   'Do homework',
@@ -92,12 +94,9 @@ export default function TimeWise({ navigation }) {
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.moduleTag}>⏱ TimeWise</Text>
           <Text style={styles.headline}>Task Duration Prediction</Text>
-          <Text style={styles.body}>
-            Pick a real task I'm about to do. Guess how long it'll take. Do it. See how far off I was.
-          </Text>
-          <Text style={styles.body}>
-            Most neurodivergent brains chronically underestimate — not out of laziness, but because the internal clock runs differently. This module helps you learn your actual pattern.
-          </Text>
+          <SpeakButton text="Pick a real task. Guess how long it will take. Do it. See how close you were. Repeating this trains your internal clock." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+          <AnimatedGuide placeholder="timewise" label="Predict · Do · Compare" width={110} height={110} />
+          <Text style={styles.body}>Guess. Do it. See how close you were.</Text>
           <View style={styles.goalBox}>
             <Text style={styles.goalLabel}>WHAT YOU'LL GAIN</Text>
             <Text style={styles.goalText}>My brain always underestimates. With practice, I'll learn by how much — and start adding the buffer before I'm late</Text>
@@ -284,8 +283,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: 24, paddingBottom: 16 },
 
+  headlineRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 14 },
   moduleTag: { fontSize: 13, color: colors.primary, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 },
-  headline: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 14 },
+  headline: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 0 },
   body: { fontSize: 16, color: colors.textLight, lineHeight: 24, marginBottom: 12 },
   hint: { fontSize: 15, color: colors.textLight, lineHeight: 22, textAlign: 'center' },
 

@@ -5,6 +5,8 @@ import {
 import { useStore } from '../../../store';
 import { colors } from '../../../theme';
 import { logSession } from '../../../services/logger';
+import SpeakButton from '../../../components/SpeakButton';
+import AnimatedGuide from '../../../components/AnimatedGuide';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -212,7 +214,9 @@ export default function MemoryBank({ navigation }) {
 
           <Text style={styles.moduleTag}>🧠 MemoryBank</Text>
           <Text style={styles.headline}>Train your working memory</Text>
-          <Text style={styles.body}>See a sequence → remember it → recall it. Level adapts automatically.</Text>
+          <SpeakButton text="See a sequence, remember it, recall it. Choose a mode below to start. Level adjusts to keep you challenged." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+          <AnimatedGuide placeholder="memory" label="See · Remember · Recall" width={110} height={110} />
+          <Text style={styles.body}>See a sequence · remember · recall.</Text>
 
           {Object.entries(MODES).map(([key, m]) => {
             const lvl = memoryBankLevels[key] ?? 3;
@@ -488,6 +492,7 @@ const styles = StyleSheet.create({
   backBtn:   { marginBottom: 16 },
   backBtnText: { fontSize: 15, color: colors.primary, fontWeight: '600' },
   moduleTag: { fontSize: 12, fontWeight: '800', color: colors.primary, letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' },
+  headlineRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 6 },
   headline:  { fontSize: 24, fontWeight: '800', color: colors.text, marginBottom: 6 },
   body:      { fontSize: 13, color: colors.textLight, lineHeight: 20, marginBottom: 12 },
 

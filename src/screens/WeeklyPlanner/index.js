@@ -79,6 +79,9 @@ export default function WeeklyPlanner({ navigation }) {
       <View style={styles.header}>
         <Text style={styles.title}>Weekly Planner</Text>
         <Text style={styles.subtitle}>{totalActive} active task{totalActive !== 1 ? 's' : ''}</Text>
+        <View style={styles.goalCard}>
+          <Text style={styles.goalText}>🎯 Goal: Add tasks, schedule steps, review weekly</Text>
+        </View>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.calBtn} onPress={() => navigation.navigate('WeeklyCalendar')}>
             <Text style={styles.calBtnText}>📅 Schedule View</Text>
@@ -201,6 +204,8 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#EBEBEB' },
   title: { fontSize: 24, fontWeight: '800', color: colors.text },
   subtitle: { fontSize: 14, color: colors.textLight, marginTop: 2, marginBottom: 10 },
+  goalCard: { backgroundColor: colors.primaryLight, borderRadius: 10, padding: 10, marginTop: 6, borderWidth: 1, borderColor: colors.primary + '40' },
+  goalText: { fontSize: 13, color: colors.primary, fontWeight: '700' },
   headerButtons: { flexDirection: 'row', gap: 8 },
   calBtn: { borderWidth: 1.5, borderColor: '#E0E0E0', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
   calBtnText: { fontSize: 13, color: colors.text, fontWeight: '700' },

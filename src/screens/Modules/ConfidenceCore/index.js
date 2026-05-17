@@ -1,13 +1,14 @@
 import React, { useState, useRef } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity,
   ScrollView, TextInput, Animated,
 } from 'react-native';
 import { useStore } from '../../../store';
-import { colors } from '../../../theme';
+import { colors, useColors } from '../../../theme';
 import { logSession } from '../../../services/logger';
 import SpeakButton from '../../../components/SpeakButton';
 import AnimatedGuide from '../../../components/AnimatedGuide';
+import SessionProgress from '../../../components/SessionProgress';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -49,7 +50,9 @@ const P = { INTRO: 'intro', CAT: 'cat', WHAT: 'what', HOW: 'how', STRENGTH: 'str
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function ConfidenceCore({ navigation }) {
+export default function ConfidenceCore({
+  navigation }) {
+  const colors = useColors();
   const { weeklyWins, addWin, participantCode } = useStore(s => ({
     weeklyWins:   s.weeklyWins || [],
     addWin:       s.addWin,
@@ -102,6 +105,7 @@ export default function ConfidenceCore({ navigation }) {
 
   // ── Stats ────────────────────────────────────────────────────────────────────
 
+  const winStep = { intro: 0, cat: 1, what: 2, how: 3, strength: 4, celebrate: 5 }[phase] ?? null;
   const totalWins = weeklyWins.length;
   const today = new Date().toDateString();
   const loggedToday = weeklyWins.some(w => new Date(w.date).toDateString() === today);
@@ -145,36 +149,34 @@ export default function ConfidenceCore({ navigation }) {
   // ── INTRO ──────────────────────────────────────────────────────────────────
   if (phase === P.INTRO) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backBtnText}>← Back</Text>
-          </TouchableOpacity>
 
-          <Text style={styles.moduleTag}>⚡ ConfidenceCore</Text>
-          <Text style={styles.headline}>Build your evidence</Text>
-          <SpeakButton text="Log any win. Build permanent evidence against self-doubt. Your brain forgets successes — this archive doesn't." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
-          <View style={styles.goalCard}>
-            <Text style={styles.goalText}>🎯 Goal: Win archive grows every session</Text>
+
+          <Text style={[styles.moduleTag, { color: colors.text }]}>⚡ ConfidenceCore</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Build your evidence</Text>
+          <SpeakButton text="Our brains are wired to notice what goes wrong and move on from what goes right — but we can change that. Every win we log becomes permanent evidence of how capable we truly are. When we feel doubt creeping in, our archive is right here to remind us of the truth. Scientists call this building a positive evidence base, and it genuinely rewires how we see ourselves over time. Session by session, we build unshakeable confidence from real proof. We are not behind — we are rising. Let's add a win." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+          <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.goalText, { color: colors.text }]}>🎯 Goal: Win archive grows every session</Text>
           </View>
           <AnimatedGuide placeholder="confidence" label="Log a win" width={110} height={110} style={{ marginTop: 20, marginBottom: 20 }} />
-          <Text style={styles.body}>Log any win. Your archive proves what you can do.</Text>
+          <Text style={[styles.body, { color: colors.text }]}>Log any win. Your archive proves what you can do.</Text>
 
           {/* Stats row */}
           {totalWins > 0 && (
             <View style={styles.statsRow}>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>{totalWins}</Text>
-                <Text style={styles.statLabel}>Total wins</Text>
+              <View style={[styles.statBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{totalWins}</Text>
+                <Text style={[styles.statLabel, { color: colors.text }]}>Total wins</Text>
               </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statValue}>{streak}</Text>
-                <Text style={styles.statLabel}>Day streak</Text>
+              <View style={[styles.statBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{streak}</Text>
+                <Text style={[styles.statLabel, { color: colors.text }]}>Day streak</Text>
               </View>
               {bestStrength && (
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>{bestStrength.icon}</Text>
-                  <Text style={styles.statLabel}>{bestStrength.label}</Text>
+                <View style={[styles.statBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.statValue, { color: colors.text }]}>{bestStrength.icon}</Text>
+                  <Text style={[styles.statLabel, { color: colors.text }]}>{bestStrength.label}</Text>
                 </View>
               )}
             </View>
@@ -221,13 +223,14 @@ export default function ConfidenceCore({ navigation }) {
   // ── STEP 1: Category ──────────────────────────────────────────────────────
   if (phase === P.CAT) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        {winStep !== null && <SessionProgress current={winStep} total={5} />}
         <View style={styles.content}>
           <TouchableOpacity onPress={() => setPhase(P.INTRO)} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← Back</Text>
           </TouchableOpacity>
           <Text style={styles.stepTag}>Step 1 of 3</Text>
-          <Text style={styles.headline}>What kind of win?</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>What kind of win?</Text>
           <View style={styles.catGrid}>
             {CATEGORIES.map(c => (
               <TouchableOpacity
@@ -256,14 +259,15 @@ export default function ConfidenceCore({ navigation }) {
   if (phase === P.WHAT) {
     const cat = CATEGORIES.find(c => c.id === category);
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        {winStep !== null && <SessionProgress current={winStep} total={5} />}
         <View style={styles.content}>
           <TouchableOpacity onPress={() => setPhase(P.CAT)} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← Back</Text>
           </TouchableOpacity>
           <Text style={styles.stepTag}>{cat?.icon} {cat?.label} · Step 1 of 3</Text>
-          <Text style={styles.headline}>Describe the win</Text>
-          <Text style={styles.body}>A few words is enough.</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Describe the win</Text>
+          <Text style={[styles.body, { color: colors.text }]}>A few words is enough.</Text>
           <TextInput
             style={styles.winInput}
             placeholder='e.g. "Finished my bio lab report"'
@@ -288,14 +292,14 @@ export default function ConfidenceCore({ navigation }) {
   // ── STEP 3: Attribution ───────────────────────────────────────────────────
   if (phase === P.HOW) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <TouchableOpacity onPress={() => setPhase(P.WHAT)} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← Back</Text>
           </TouchableOpacity>
           <Text style={styles.stepTag}>Step 2 of 3</Text>
-          <Text style={styles.headline}>What did YOU do?</Text>
-          <Text style={styles.body}>Tap everything that applies.</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>What did YOU do?</Text>
+          <Text style={[styles.body, { color: colors.text }]}>Tap everything that applies.</Text>
           <View style={styles.chipGrid}>
             {ATTRIBUTION_CHIPS.map(chip => (
               <TouchableOpacity
@@ -322,13 +326,13 @@ export default function ConfidenceCore({ navigation }) {
   // ── STEP 4: Strength ──────────────────────────────────────────────────────
   if (phase === P.STRENGTH) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
           <TouchableOpacity onPress={() => setPhase(P.HOW)} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← Back</Text>
           </TouchableOpacity>
           <Text style={styles.stepTag}>Step 3 of 3</Text>
-          <Text style={styles.headline}>Which strength showed up?</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Which strength showed up?</Text>
           <View style={styles.strengthGrid}>
             {STRENGTHS.map(s => (
               <TouchableOpacity
@@ -361,7 +365,8 @@ export default function ConfidenceCore({ navigation }) {
     const newMilestone = MILESTONES[winNum];
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        {winStep !== null && <SessionProgress current={winStep} total={5} />}
         <View style={styles.content}>
           <Animated.Text style={[styles.celebEmoji, {
             transform: [{ scale: celebAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }) }],
@@ -375,7 +380,7 @@ export default function ConfidenceCore({ navigation }) {
             </View>
           )}
 
-          <View style={styles.winCard}>
+          <View style={[styles.winCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={styles.winCardText}>"{winText}"</Text>
             <View style={styles.winCardMeta}>
               <Text style={styles.winCardChips}>{attributions.join(' · ')}</Text>
@@ -409,7 +414,7 @@ export default function ConfidenceCore({ navigation }) {
   // ── ARCHIVE ───────────────────────────────────────────────────────────────
   if (phase === P.ARCHIVE) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.archiveHeader}>
           <TouchableOpacity onPress={() => setPhase(P.INTRO)}>
             <Text style={styles.backBtnText}>← Back</Text>
@@ -439,14 +444,14 @@ export default function ConfidenceCore({ navigation }) {
 
         <ScrollView contentContainerStyle={styles.archiveList}>
           {filteredWins.length === 0 ? (
-            <Text style={styles.archiveEmpty}>No wins in this category yet.</Text>
+            <Text style={[styles.archiveEmpty, { color: colors.text }]}>No wins in this category yet.</Text>
           ) : (
             filteredWins.map(w => {
               const cat = CATEGORIES.find(c => c.id === w.category);
               const str = STRENGTHS.find(s => s.id === w.strength);
               const date = new Date(w.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
               return (
-                <View key={w.id} style={styles.archiveCard}>
+                <View key={w.id} style={[styles.archiveCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <View style={styles.archiveCardHeader}>
                     <Text style={styles.archiveCatIcon}>{cat?.icon}</Text>
                     <Text style={styles.archiveDate}>{date}</Text>
@@ -474,13 +479,14 @@ export default function ConfidenceCore({ navigation }) {
     const prevPhase = stepIdx === 0 ? P.INTRO : stepIdx === 1 ? P.HARD_1 : P.HARD_2;
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        {winStep !== null && <SessionProgress current={winStep} total={5} />}
         <View style={styles.content}>
           <TouchableOpacity onPress={() => setPhase(prevPhase)} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← Back</Text>
           </TouchableOpacity>
           <Text style={styles.stepTag}>Step {stepIdx + 1} of 3</Text>
-          <Text style={styles.headline}>{prompt.q}</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>{prompt.q}</Text>
           <TextInput
             style={styles.winInput}
             placeholder={prompt.placeholder}
@@ -509,14 +515,14 @@ export default function ConfidenceCore({ navigation }) {
 
   if (phase === P.HARD_ARCHIVE) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.hardArchiveHeader}>
           <Text style={styles.hardArchiveTitle}>Look what you've already done.</Text>
           <Text style={styles.hardArchiveSub}>{totalWins} wins documented. Every one of them real.</Text>
         </View>
         {weeklyWins.length === 0 ? (
           <View style={styles.content}>
-            <Text style={styles.archiveEmpty}>No wins logged yet. Hard days are when you start.</Text>
+            <Text style={[styles.archiveEmpty, { color: colors.text }]}>No wins logged yet. Hard days are when you start.</Text>
             <TouchableOpacity style={[styles.primaryBtn, { marginTop: 24 }]} onPress={() => { setPhase(P.CAT); }}>
               <Text style={styles.primaryBtnText}>Log your first win →</Text>
             </TouchableOpacity>
@@ -528,7 +534,7 @@ export default function ConfidenceCore({ navigation }) {
               const str = STRENGTHS.find(s => s.id === w.strength);
               const date = new Date(w.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
               return (
-                <View key={w.id} style={styles.archiveCard}>
+                <View key={w.id} style={[styles.archiveCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                   <View style={styles.archiveCardHeader}>
                     <Text style={styles.archiveCatIcon}>{cat?.icon}</Text>
                     <Text style={styles.archiveDate}>{date}</Text>
@@ -558,9 +564,8 @@ export default function ConfidenceCore({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content:   { padding: 24, paddingBottom: 16 },
-  backBtn:   { marginBottom: 12 },
-  backBtnText: { fontSize: 15, color: colors.primary, fontWeight: '600' },
+  content:   { padding: 20, paddingTop: 8, paddingBottom: 16 },
+  backBtn:   { marginBottom: 8 },
   moduleTag:   { fontSize: 12, fontWeight: '800', color: colors.primary, letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' },
   headline:    { fontSize: 26, fontWeight: '800', color: colors.text, marginBottom: 8 },
   body:        { fontSize: 14, color: colors.textLight, marginBottom: 16, lineHeight: 20 },

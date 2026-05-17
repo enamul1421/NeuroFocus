@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, TextInput
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput
 } from 'react-native';
 import { useStore } from '../../../store';
 import { logSession } from '../../../services/logger';
-import { colors } from '../../../theme';
+import { colors, useColors } from '../../../theme';
 import SpeakButton from '../../../components/SpeakButton';
 import AnimatedGuide from '../../../components/AnimatedGuide';
+import SessionProgress from '../../../components/SessionProgress';
 
 const TASKS = [
   'Do homework',
@@ -24,7 +25,9 @@ const DURATIONS = [5, 10, 15, 20, 25, 30, 45, 60];
 
 const PHASE = { INTRO: 'intro', PREDICT: 'predict', RUNNING: 'running', RESULT: 'result' };
 
-export default function TimeWise({ navigation }) {
+export default function TimeWise({
+  navigation }) {
+  const colors = useColors();
   const { timeWiseSessions, addTimeWiseSession, participantCode } = useStore(s => ({
     timeWiseSessions: s.timeWiseSessions,
     addTimeWiseSession: s.addTimeWiseSession,
@@ -86,20 +89,23 @@ export default function TimeWise({ navigation }) {
   }
 
   const taskLabel = selectedTask === 'Other...' ? (customTask.trim() || 'Other') : selectedTask;
+  const phaseStep = { intro: 0, predict: 1, running: 2, result: 3 }[phase] ?? 0;
+  const scrollRef = useRef(null);
 
   // ── INTRO ──
   if (phase === PHASE.INTRO) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <SessionProgress current={phaseStep} total={4} />
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.moduleTag}>⏱ TimeWise</Text>
-          <Text style={styles.headline}>Task Duration Prediction</Text>
-          <SpeakButton text="Pick a real task. Guess how long it will take. Do it. See how close you were. Repeating this trains your internal clock." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+          <Text style={[styles.moduleTag, { color: colors.text }]}>⏱ TimeWise</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Task Duration Prediction</Text>
+          <SpeakButton text="Our brains are wired for big ideas, creativity, and energy — and we can absolutely train them to master time too. Every time we guess how long something takes and then check how close we were, we build a real superpower called time awareness. Scientists have proven this kind of practice actually rewires the brain and makes us sharper. Session by session, we get calmer, more confident, and more in control of our day. We are not behind — we are training. Pick a task, make our best guess, do it, and see how close we are. We've got this." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
           <AnimatedGuide placeholder="timewise" label="Predict · Do · Compare" width={110} height={110} />
-          <Text style={styles.body}>Guess. Do it. See how close you were.</Text>
-          <View style={styles.goalBox}>
-            <Text style={styles.goalLabel}>WHAT YOU'LL GAIN</Text>
-            <Text style={styles.goalText}>My brain always underestimates. With practice, I'll learn by how much — and start adding the buffer before I'm late</Text>
+          <Text style={[styles.body, { color: colors.text }]}>Guess. Do it. See how close you were.</Text>
+          <View style={[styles.goalBox, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.goalLabel, { color: colors.text }]}>WHAT YOU'LL GAIN</Text>
+            <Text style={[styles.goalText, { color: colors.text }]}>My brain always underestimates. With practice, I'll learn by how much — and start adding the buffer before I'm late</Text>
           </View>
         </ScrollView>
         <TouchableOpacity style={styles.button} onPress={() => setPhase(PHASE.PREDICT)}>
@@ -114,16 +120,20 @@ export default function TimeWise({ navigation }) {
     const canStart = selectedTask && predictedMin &&
       (selectedTask !== 'Other...' || customTask.trim().length > 0);
     return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.moduleTag}>Step 1 — Predict</Text>
-          <Text style={styles.headline}>What am I doing?</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <SessionProgress current={phaseStep} total={4} />
+        <ScrollView ref={scrollRef} contentContainerStyle={styles.content}>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>Step 1 — Predict</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>What am I doing?</Text>
 
           {TASKS.map(t => (
             <TouchableOpacity
               key={t}
               style={[styles.taskOption, selectedTask === t && styles.taskSelected]}
-              onPress={() => setSelectedTask(t)}
+              onPress={() => {
+                setSelectedTask(t);
+                setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+              }}
             >
               <Text style={[styles.taskOptionText, selectedTask === t && styles.taskOptionTextSelected]}>{t}</Text>
             </TouchableOpacity>
@@ -131,7 +141,7 @@ export default function TimeWise({ navigation }) {
 
           {selectedTask === 'Other...' && (
             <TextInput
-              style={styles.taskInput}
+              style={[styles.taskInput, { backgroundColor: colors.surface, borderColor: colors.border }]}
               placeholder="Describe your task..."
               value={customTask}
               onChangeText={setCustomTask}
@@ -141,8 +151,11 @@ export default function TimeWise({ navigation }) {
 
           {selectedTask && (
             <>
-              <Text style={[styles.headline, { marginTop: 28, marginBottom: 12 }]}>
-                How long do I think it'll take?
+              <Text style={[styles.headline, { marginTop: 28, marginBottom: 4, color: colors.primary }]}>
+                👇 Step 2 — How long will it take?
+              </Text>
+              <Text style={[styles.body, { marginBottom: 12, color: colors.textLight }]}>
+                Pick a time — then Start timer unlocks.
               </Text>
               <View style={styles.durationGrid}>
                 {DURATIONS.map(d => (
@@ -176,15 +189,16 @@ export default function TimeWise({ navigation }) {
     const mins = Math.floor(elapsedSec / 60);
     const secs = elapsedSec % 60;
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <SessionProgress current={phaseStep} total={4} />
         <View style={styles.content}>
-          <Text style={styles.moduleTag}>⏱ Timer running</Text>
-          <Text style={styles.taskRunning}>{taskLabel}</Text>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>⏱ Timer running</Text>
+          <Text style={[styles.taskRunning, { color: colors.text }]}>{taskLabel}</Text>
           <Text style={styles.elapsed}>{mins}:{secs.toString().padStart(2, '0')}</Text>
-          <Text style={styles.elapsedLabel}>elapsed</Text>
-          <View style={styles.hintBox}>
-            <Text style={styles.hint}>Put the phone down and get it done.</Text>
-            <Text style={styles.hint}>Tap Done when I'm finished.</Text>
+          <Text style={[styles.elapsedLabel, { color: colors.text }]}>elapsed</Text>
+          <View style={[styles.hintBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.hint, { color: colors.text }]}>Put the phone down and get it done.</Text>
+            <Text style={[styles.hint, { color: colors.text }]}>Tap Done when I'm finished.</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.button} onPress={markDone}>
@@ -221,46 +235,47 @@ export default function TimeWise({ navigation }) {
       : null;
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <SessionProgress current={phaseStep} total={4} />
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.moduleTag}>⏱ TimeWise — Result</Text>
-          <Text style={styles.headline}>{headline}</Text>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>⏱ TimeWise — Result</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>{headline}</Text>
 
           <View style={styles.resultRow}>
-            <View style={styles.resultBox}>
-              <Text style={styles.resultLabel}>I predicted</Text>
-              <Text style={styles.resultValue}>{pred}</Text>
+            <View style={[styles.resultBox, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.resultLabel, { color: colors.text }]}>I predicted</Text>
+              <Text style={[styles.resultValue, { color: colors.text }]}>{pred}</Text>
               <Text style={styles.resultUnit}>min</Text>
             </View>
-            <View style={styles.resultBox}>
-              <Text style={styles.resultLabel}>It actually took</Text>
-              <Text style={styles.resultValue}>{act}</Text>
+            <View style={[styles.resultBox, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.resultLabel, { color: colors.text }]}>It actually took</Text>
+              <Text style={[styles.resultValue, { color: colors.text }]}>{act}</Text>
               <Text style={styles.resultUnit}>min</Text>
             </View>
           </View>
 
-          <View style={styles.coeffBox}>
+          <View style={[styles.coeffBox, { backgroundColor: colors.surface }]}>
             <Text style={styles.coeffLabel}>Accuracy coefficient</Text>
             <Text style={[styles.coeffValue, { color: accurate ? colors.success : colors.primary }]}>
               {c?.toFixed(2)}
             </Text>
-            <Text style={styles.coeffSub}>1.0 = perfect · below 1.0 = underestimated</Text>
+            <Text style={[styles.coeffSub, { color: colors.text }]}>1.0 = perfect · below 1.0 = underestimated</Text>
           </View>
 
-          <Text style={styles.body}>{feedback}</Text>
+          <Text style={[styles.body, { color: colors.text }]}>{feedback}</Text>
 
           {pastSessions.length >= 2 && (
-            <View style={styles.trendBox}>
-              <Text style={styles.trendTitle}>MY PATTERN ({pastSessions.length} sessions)</Text>
+            <View style={[styles.trendBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[styles.trendTitle, { color: colors.text }]}>MY PATTERN ({pastSessions.length} sessions)</Text>
               {avgCoeff && (
-                <Text style={styles.trendAvg}>Average coefficient: {avgCoeff}
+                <Text style={[styles.trendAvg, { color: colors.text }]}>Average coefficient: {avgCoeff}
                   {avgCoeff < 1.0 ? ` — I typically underestimate by ${Math.round((1 - avgCoeff) * 100)}%` : ''}
                 </Text>
               )}
               {pastSessions.map((s, i) => (
                 <View key={i} style={styles.trendRow}>
-                  <Text style={styles.trendTask} numberOfLines={1}>{s.task}</Text>
-                  <Text style={styles.trendPred}>{s.predictedMin}→{s.actualMin}m</Text>
+                  <Text style={[styles.trendTask, { color: colors.text }]} numberOfLines={1}>{s.task}</Text>
+                  <Text style={[styles.trendPred, { color: colors.text }]}>{s.predictedMin}→{s.actualMin}m</Text>
                   <Text style={[styles.trendCoeff, { color: s.coeff >= 0.85 && s.coeff <= 1.15 ? colors.success : colors.primary }]}>
                     {s.coeff?.toFixed(2)}
                   </Text>
@@ -281,7 +296,7 @@ export default function TimeWise({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 24, paddingBottom: 16 },
+  content: { padding: 20, paddingTop: 8, paddingBottom: 16 },
 
   headlineRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 14 },
   moduleTag: { fontSize: 13, color: colors.primary, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 },

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useStore } from '../../store';
 import { logSession } from '../../services/logger';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
 
 const QUESTIONS = [
   { id: 'homework', label: 'I completed my homework on time this week.' },
@@ -25,7 +25,9 @@ function getStudyWeek(startDate) {
   return Math.max(1, Math.ceil(ms / (7 * 24 * 60 * 60 * 1000)));
 }
 
-export default function WeeklyCheckIn({ navigation }) {
+export default function WeeklyCheckIn({
+  navigation }) {
+  const colors = useColors();
   const { addWeeklyCheckIn, participantCode, lastSessionDate } = useStore(s => ({
     addWeeklyCheckIn: s.addWeeklyCheckIn,
     participantCode: s.participantCode,
@@ -63,10 +65,10 @@ export default function WeeklyCheckIn({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.moduleTag}>Weekly Check-In</Text>
-        <Text style={styles.headline}>How was your week?</Text>
+        <Text style={[styles.moduleTag, { color: colors.text }]}>Weekly Check-In</Text>
+        <Text style={[styles.headline, { color: colors.text }]}>How was your week?</Text>
         <Text style={styles.note}>3 quick questions. Honest answers only — no judgment.</Text>
 
         {QUESTIONS.map(q => (

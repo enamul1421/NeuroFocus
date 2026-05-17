@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity,
   ScrollView, Animated, Platform,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
 import { useStore } from '../../store';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
 import SpeakButton from '../../components/SpeakButton';
 import AnimatedGuide from '../../components/AnimatedGuide';
 
@@ -16,7 +16,9 @@ const P = { HOME: 'home', NIGHT_PREP: 'night_prep', ROUTINE: 'routine', DONE: 'd
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function MorningRoutine({ navigation }) {
+export default function MorningRoutine({
+  navigation }) {
+  const colors = useColors();
   const {
     morningTasks, nightBeforeTasks, morningLogs,
     morningNotificationTime, setMorningTasks,
@@ -196,17 +198,17 @@ export default function MorningRoutine({ navigation }) {
   if (phase === P.HOME) {
     const avg = avgTime();
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.header}>
             <View>
               <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginBottom: 4 }}>
                 <Text style={styles.backBtnText}>← Back</Text>
               </TouchableOpacity>
-              <Text style={styles.title}>Daily Routine</Text>
-              <SpeakButton text="Complete your morning routine every day. Each task has a timer to help you stay on track." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
-              <Text style={styles.subtitle}>~{totalMins} min · {morningTasks.length} tasks</Text>
-              <View style={styles.goalCard}>
+              <Text style={[styles.title, { color: colors.text }]}>Daily Routine</Text>
+              <SpeakButton text="Our brains thrive on predictable structure, but building habits takes real effort when focus does not come easy. Every time we follow our daily routine, we reduce the mental energy spent on decisions and free up our brain for the things that truly matter. Routines are not boring — they are our superpower. Let's build ours together, one day at a time." style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+              <Text style={[styles.subtitle, { color: colors.text }]}>~{totalMins} min · {morningTasks.length} tasks</Text>
+              <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
                 <Text style={styles.goalText}>🎯 Goal: Complete the full routine every day</Text>
               </View>
               <AnimatedGuide placeholder="routine" label="Morning · Night prep" width={160} height={120} style={{ marginTop: 20, marginBottom: 8 }} />
@@ -257,7 +259,7 @@ export default function MorningRoutine({ navigation }) {
           </View>
 
           {/* Task preview */}
-          <Text style={styles.sectionLabel}>TODAY'S ROUTINE</Text>
+          <Text style={[styles.sectionLabel, { color: colors.text }]}>TODAY'S ROUTINE</Text>
           {morningTasks.map(t => (
             <View key={t.id} style={styles.taskPreviewRow}>
               <Text style={styles.taskPreviewIcon}>{t.icon}</Text>
@@ -280,13 +282,13 @@ export default function MorningRoutine({ navigation }) {
   if (phase === P.NIGHT_PREP) {
     const allNightDone = nightChecked.length === nightBeforeTasks.length;
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.content}>
           <TouchableOpacity onPress={() => setPhase(P.HOME)} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← Back</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>🌙 Night Before</Text>
-          <Text style={styles.subtitle}>~{nightBeforeTasks.reduce((s, t) => s + (t.mins || 0), 0)} min · {nightBeforeTasks.length} tasks</Text>
+          <Text style={[styles.title, { color: colors.text }]}>🌙 Night Before</Text>
+          <Text style={[styles.subtitle, { color: colors.text }]}>~{nightBeforeTasks.reduce((s, t) => s + (t.mins || 0), 0)} min · {nightBeforeTasks.length} tasks</Text>
 
           <View style={{ marginTop: 16 }}>
             {nightBeforeTasks.map(t => {
@@ -330,7 +332,7 @@ export default function MorningRoutine({ navigation }) {
   // ── ROUTINE ───────────────────────────────────────────────────────────────
   if (phase === P.ROUTINE) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
         <View style={styles.routineHeader}>
           <TouchableOpacity onPress={() => setPhase(P.HOME)}>
@@ -427,7 +429,7 @@ export default function MorningRoutine({ navigation }) {
     const actualTotal = log?.totalMinutes || 0;
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.doneEmoji}>{log?.allCompleted ? '🌅' : '⏳'}</Text>
           <Text style={styles.doneTitle}>{log?.allCompleted ? 'Routine complete!' : 'Partial completion'}</Text>
@@ -479,14 +481,14 @@ export default function MorningRoutine({ navigation }) {
   // ── SETTINGS ─────────────────────────────────────────────────────────────
   if (phase === P.SETTINGS) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
           <TouchableOpacity onPress={() => setPhase(P.HOME)} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← Back</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Settings</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
 
-          <Text style={styles.sectionLabel}>MORNING ALERT</Text>
+          <Text style={[styles.sectionLabel, { color: colors.text }]}>MORNING ALERT</Text>
           <TouchableOpacity style={styles.notifRow} onPress={() => setShowTimePicker(true)}>
             <Text style={styles.notifLabel}>☀️ Wake-up reminder</Text>
             <Text style={styles.notifTime}>
@@ -509,7 +511,7 @@ export default function MorningRoutine({ navigation }) {
             />
           )}
 
-          <Text style={styles.sectionLabel}>TASK DURATIONS</Text>
+          <Text style={[styles.sectionLabel, { color: colors.text }]}>TASK DURATIONS</Text>
           {morningTasks.map(task => (
             <View key={task.id} style={styles.durationRow}>
               <Text style={styles.durationIcon}>{task.icon}</Text>

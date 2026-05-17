@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useStore } from '../../store';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
 
 const CHALLENGES = [
   { id: 'time', label: 'Losing track of time', module: 'TimeWise' },
@@ -12,7 +12,9 @@ const CHALLENGES = [
   { id: 'confidence', label: 'Believing I can do it', module: 'ConfidenceCore' },
 ];
 
-export default function Screen3Challenges({ navigation }) {
+export default function Screen3Challenges({
+  navigation }) {
+  const colors = useColors();
   const setOnboardingData = useStore(s => s.setOnboardingData);
   const [selected, setSelected] = useState([]);
 
@@ -30,10 +32,10 @@ export default function Screen3Challenges({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.step}>Step 2 of 3</Text>
-        <Text style={styles.headline}>Your biggest challenges</Text>
+        <Text style={[styles.headline, { color: colors.text }]}>Your biggest challenges</Text>
         <Text style={styles.note}>Pick your top 2. This shapes your daily sessions.</Text>
 
         {CHALLENGES.map(c => {
@@ -53,7 +55,7 @@ export default function Screen3Challenges({ navigation }) {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.optionText, isDisabled && styles.disabledText]}>{c.label}</Text>
-                <Text style={styles.moduleTag}>{c.module} module</Text>
+                <Text style={[styles.moduleTag, { color: colors.text }]}>{c.module} module</Text>
               </View>
             </TouchableOpacity>
           );

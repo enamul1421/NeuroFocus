@@ -10,3 +10,4 @@ web-build/
 *.orig.*
 web-build/
 .env
+src/config/openai.js

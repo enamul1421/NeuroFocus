@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity,
   ScrollView, TextInput, Alert, Share
 } from 'react-native';
 import { getLogs, exportCSV, clearLogs } from '../../services/logger';
 import { useStore } from '../../store';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
 
 const ADMIN_PIN = 'ADMIN'; // researcher enters their participant code as ADMIN
 
-export default function Admin({ navigation }) {
+export default function Admin({
+  navigation }) {
+  const colors = useColors();
   const participantCode = useStore(s => s.participantCode);
   const [pin, setPin] = useState('');
   const [unlocked, setUnlocked] = useState(participantCode === ADMIN_PIN);
@@ -65,10 +67,10 @@ export default function Admin({ navigation }) {
 
   // ── PIN GATE ──
   if (!unlocked) return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <Text style={styles.headline}>Research Admin</Text>
-        <Text style={styles.body}>Researcher access only. Enter PIN to view data.</Text>
+        <Text style={[styles.headline, { color: colors.text }]}>Research Admin</Text>
+        <Text style={[styles.body, { color: colors.text }]}>Researcher access only. Enter PIN to view data.</Text>
         <TextInput
           style={styles.pinInput}
           placeholder="Enter PIN"
@@ -89,9 +91,9 @@ export default function Admin({ navigation }) {
 
   // ── ADMIN PANEL ──
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.headline}>Research Data</Text>
+        <Text style={[styles.headline, { color: colors.text }]}>Research Data</Text>
 
         {/* Tabs */}
         <View style={styles.tabs}>
@@ -125,7 +127,7 @@ export default function Admin({ navigation }) {
 
             {/* Participants list */}
             <Text style={styles.sectionTitle}>Participant codes</Text>
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
               {participantSet.size === 0
                 ? <Text style={styles.empty}>No participant codes logged yet.</Text>
                 : [...participantSet].map(code => {
@@ -142,7 +144,7 @@ export default function Admin({ navigation }) {
 
             {/* Module breakdown */}
             <Text style={styles.sectionTitle}>Sessions by module</Text>
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
               {Object.entries(moduleCounts).map(([mod, count]) => (
                 <View key={mod} style={styles.partRow}>
                   <Text style={styles.partCode}>{mod}</Text>
@@ -156,7 +158,7 @@ export default function Admin({ navigation }) {
 
             {/* Recent logs */}
             <Text style={styles.sectionTitle}>Recent logs (last 10)</Text>
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
               {logs.slice(-10).reverse().map((l, i) => (
                 <View key={i} style={[styles.logRow, i > 0 && styles.logBorder]}>
                   <Text style={styles.logCode}>{l.participantCode}</Text>
@@ -175,6 +177,9 @@ export default function Admin({ navigation }) {
 
         {tab === 'csv' && (
           <>
+            <TouchableOpacity style={[styles.button, { marginBottom: 8 }]} onPress={() => navigation.navigate('ResearcherDashboard')}>
+              <Text style={styles.buttonText}>📊 Researcher Dashboard</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={shareCSV}>
               <Text style={styles.buttonText}>Share / Export CSV</Text>
             </TouchableOpacity>

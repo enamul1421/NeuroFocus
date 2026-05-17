@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity,
   ScrollView, TextInput, KeyboardAvoidingView, Platform
 } from 'react-native';
 import { useStore } from '../../../store';
 import { logSession } from '../../../services/logger';
-import { colors } from '../../../theme';
+import { colors, useColors } from '../../../theme';
 
 // ── Task type templates (evidence-based step sequences) ──────────────────────
 const TASK_TEMPLATES = {
@@ -119,7 +119,9 @@ const COMPLETION_OPTIONS = [
   { label: "❌ I didn't do it",  value: 'not_completed', color: '#9E9E9E' },
 ];
 
-export default function PlanForward({ navigation }) {
+export default function PlanForward({
+  navigation }) {
+  const colors = useColors();
   const { participantCode, planForwardSessions, addPlanForwardSession } = useStore(s => ({
     participantCode: s.participantCode,
     planForwardSessions: s.planForwardSessions || [],
@@ -208,11 +210,11 @@ export default function PlanForward({ navigation }) {
   // ── CHECK-IN ─────────────────────────────────────────────────────────────
   if (phase === PHASE.CHECK_IN && lastSession) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.moduleTag}>📋 PlanForward</Text>
-          <Text style={styles.headline}>Quick check-in</Text>
-          <Text style={styles.body}>Last session you planned to:</Text>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>📋 PlanForward</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Quick check-in</Text>
+          <Text style={[styles.body, { color: colors.text }]}>Last session you planned to:</Text>
           <View style={styles.lastPlanBox}>
             <Text style={styles.lastPlanTask}>{lastSession.myPlanTask}</Text>
             {lastSession.myPlanTime ? <Text style={styles.lastPlanTime}>Starting: {lastSession.myPlanTime}</Text> : null}
@@ -253,19 +255,19 @@ export default function PlanForward({ navigation }) {
   // ── INTRO ─────────────────────────────────────────────────────────────────
   if (phase === PHASE.INTRO) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.content}>
-          <Text style={styles.moduleTag}>📋 PlanForward</Text>
-          <Text style={styles.headline}>Planning practice</Text>
-          <Text style={styles.body}>Planning is a skill — not a talent. Today you'll pick a real task, follow a proven step sequence, spot obstacles, and commit to one thing today.</Text>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>📋 PlanForward</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Planning practice</Text>
+          <Text style={[styles.body, { color: colors.text }]}>Planning is a skill — not a talent. Today you'll pick a real task, follow a proven step sequence, spot obstacles, and commit to one thing today.</Text>
           <View style={styles.infoRow}>
             <Text style={styles.infoItem}>📋 Step-by-step breakdown</Text>
             <Text style={styles.infoItem}>🚧 Obstacle finder</Text>
             <Text style={styles.infoItem}>✅ Your real plan today</Text>
           </View>
-          <View style={styles.goalBox}>
-            <Text style={styles.goalLabel}>WHAT YOU'LL BUILD</Text>
-            <Text style={styles.goalText}>A real plan for a real task — using the same steps that actually work for your type of assignment</Text>
+          <View style={[styles.goalBox, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.goalLabel, { color: colors.text }]}>WHAT YOU'LL BUILD</Text>
+            <Text style={[styles.goalText, { color: colors.text }]}>A real plan for a real task — using the same steps that actually work for your type of assignment</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.button} onPress={() => setPhase(PHASE.TYPE_PICK)}>
@@ -278,11 +280,11 @@ export default function PlanForward({ navigation }) {
   // ── TYPE PICKER ───────────────────────────────────────────────────────────
   if (phase === PHASE.TYPE_PICK) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.moduleTag}>Exercise 1 of 3</Text>
-          <Text style={styles.headline}>What type of task?</Text>
-          <Text style={styles.body}>Pick the closest match. We'll load the right steps for it.</Text>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>Exercise 1 of 3</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>What type of task?</Text>
+          <Text style={[styles.body, { color: colors.text }]}>Pick the closest match. We'll load the right steps for it.</Text>
 
           <View style={styles.typeGrid}>
             {TASK_TYPE_KEYS.map(key => {
@@ -307,11 +309,11 @@ export default function PlanForward({ navigation }) {
 
     return (
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
           <ScrollView contentContainerStyle={styles.content}>
-            <Text style={styles.moduleTag}>Exercise 1 of 3  ·  {template.icon} {template.label}</Text>
-            <Text style={styles.headline}>Your step-by-step plan</Text>
-            <Text style={styles.body}>
+            <Text style={[styles.moduleTag, { color: colors.text }]}>Exercise 1 of 3  ·  {template.icon} {template.label}</Text>
+            <Text style={[styles.headline, { color: colors.text }]}>Your step-by-step plan</Text>
+            <Text style={[styles.body, { color: colors.text }]}>
               These are the steps that work for this type of task — based on how students learn best.
               Edit, remove, or add steps to fit your situation.
             </Text>
@@ -397,11 +399,11 @@ export default function PlanForward({ navigation }) {
   if (phase === PHASE.OBSTACLES) {
     return (
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
           <ScrollView contentContainerStyle={styles.content}>
-            <Text style={styles.moduleTag}>Exercise 2 of 3</Text>
-            <Text style={styles.headline}>What could go wrong?</Text>
-            <Text style={styles.body}>Name obstacles before they surprise you. Then make a backup plan.</Text>
+            <Text style={[styles.moduleTag, { color: colors.text }]}>Exercise 2 of 3</Text>
+            <Text style={[styles.headline, { color: colors.text }]}>What could go wrong?</Text>
+            <Text style={[styles.body, { color: colors.text }]}>Name obstacles before they surprise you. Then make a backup plan.</Text>
 
             {checkInResult === 'not_completed' && blockerText.trim() && (
               <View style={styles.blockerCarryBox}>
@@ -443,12 +445,12 @@ export default function PlanForward({ navigation }) {
     const canFinish = myPlanTask.trim() && myPlanSteps.filter(s => s.trim()).length >= 1;
     return (
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
           <ScrollView contentContainerStyle={styles.content}>
-            <Text style={styles.moduleTag}>Exercise 3 of 3</Text>
-            <Text style={styles.headline}>Your real plan</Text>
+            <Text style={[styles.moduleTag, { color: colors.text }]}>Exercise 3 of 3</Text>
+            <Text style={[styles.headline, { color: colors.text }]}>Your real plan</Text>
             <Text style={[styles.body, { fontStyle: 'italic' }]}>This is not practice — this is real.</Text>
-            <Text style={styles.body}>Pick one actual thing you need to do today. Break it into steps. Set a start time.</Text>
+            <Text style={[styles.body, { color: colors.text }]}>Pick one actual thing you need to do today. Break it into steps. Set a start time.</Text>
 
             <Text style={styles.label}>What's my task today?</Text>
             <TextInput style={styles.planInput}
@@ -458,7 +460,7 @@ export default function PlanForward({ navigation }) {
 
             <Text style={styles.label}>Steps:</Text>
             {myPlanSteps.map((step, i) => (
-              <View key={i} style={styles.stepRow}>
+              <View key={i} style={[styles.stepRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <View style={styles.stepNumber}><Text style={styles.stepNumberText}>{i + 1}</Text></View>
                 <TextInput style={styles.stepInput}
                   placeholder={`Step ${i + 1}…`} placeholderTextColor={colors.textLight}
@@ -485,10 +487,10 @@ export default function PlanForward({ navigation }) {
   if (phase === PHASE.SUMMARY) {
     const template = TASK_TEMPLATES[selectedType];
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.moduleTag}>📋 PlanForward — Complete</Text>
-          <Text style={styles.headline}>Session done</Text>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>📋 PlanForward — Complete</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Session done</Text>
 
           <View style={styles.summaryBlock}>
             <Text style={styles.summaryLabel}>Task type</Text>

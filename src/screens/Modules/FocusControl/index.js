@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity,
   ScrollView, Animated,
 } from 'react-native';
 import { useStore } from '../../../store';
-import { colors } from '../../../theme';
+import { colors, useColors } from '../../../theme';
 import { logSession } from '../../../services/logger';
 import SpeakButton from '../../../components/SpeakButton';
 import AnimatedGuide from '../../../components/AnimatedGuide';
+import SessionProgress from '../../../components/SessionProgress';
 
 // ── Scenarios ─────────────────────────────────────────────────────────────────
 
@@ -36,6 +37,20 @@ const WAIT_MS     = 600;
 const TRIAL_COUNT = 25;
 
 const PHASE = { INTRO: 'intro', TRAINING: 'training', RESULTS: 'results' };
+
+// Signal detection theory d-prime (sensitivity index)
+function zScore(p) {
+  const q = p < 0.5 ? p : 1 - p;
+  const t = Math.sqrt(-2 * Math.log(q));
+  const z = t - (2.515517 + 0.802853*t + 0.010328*t*t) /
+                (1 + 1.432788*t + 0.189269*t*t + 0.001308*t*t*t);
+  return p < 0.5 ? -z : z;
+}
+function calcDPrime(hitRate, faRate) {
+  const hr = Math.max(0.01, Math.min(0.99, hitRate));
+  const fa = Math.max(0.01, Math.min(0.99, faRate));
+  return Math.round((zScore(hr) - zScore(fa)) * 100) / 100;
+}
 const TS    = { WAIT: 'wait', STIMULUS: 'stimulus', FEEDBACK: 'feedback' };
 
 const FB = {
@@ -63,7 +78,9 @@ function generateTrials(count, nogoRatio) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function FocusControl({ navigation }) {
+export default function FocusControl({
+  navigation }) {
+  const colors = useColors();
   const {
     addFocusControlSession, focusControlSessions,
     focusNogoRatio, setFocusNogoRatio, participantCode,
@@ -164,6 +181,7 @@ export default function FocusControl({ navigation }) {
     const hitRate = goT.length   > 0 ? hits / goT.length   : 0;
     const faRate  = nogoT.length > 0 ? fa   / nogoT.length : 0;
     const brakeScore = Math.max(0, Math.round((hitRate - faRate) * 100));
+    const dPrime     = calcDPrime(hitRate, faRate);
     const resisted   = nogoT.filter(r => r.fb === 'correct_inhibit').map(r => r.label);
 
     let newRatio = focusNogoRatio;
@@ -176,6 +194,7 @@ export default function FocusControl({ navigation }) {
       hitRate:    Math.round(hitRate * 100),
       faRate:     Math.round(faRate  * 100),
       brakeScore,
+      dPrime,
       nogoRatio:  focusNogoRatio,
       trialsCount: finalResults.length,
       resisted,
@@ -191,45 +210,23 @@ export default function FocusControl({ navigation }) {
   // ── INTRO ──────────────────────────────────────────────────────────────────
   if (phase === PHASE.INTRO) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backBtnText}>← Back</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.moduleTag}>🎯 FocusControl</Text>
-          <Text style={styles.headline}>Train your mental brake</Text>
-          <SpeakButton text="Notifications appear. Tap study items. Ignore distractions. Trains the same circuit you use to ignore your phone during homework." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
-          <View style={styles.goalCard}>
-            <Text style={styles.goalText}>🎯 Goal: Brake score → 80+ · False alarms under 10%</Text>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>🎯 FocusControl</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Train your mental brake</Text>
+          <SpeakButton text="Our brains are wired for curiosity and quick reactions — and we can train them to focus like a laser. In this exercise, we see notifications pop up and choose which ones deserve our attention. Every time we pause and decide, we strengthen a real skill called inhibitory control. Session by session, we get sharper, calmer, and more in charge of where our attention goes. We are not distracted — we are training. Let's do this." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+          <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.goalText, { color: colors.text }]}>🎯 Goal: Brake score → 80+ · False alarms under 10%</Text>
           </View>
-          <AnimatedGuide placeholder="focus" label="Resist distractions" width={90} height={90} style={{ marginTop: 12, marginBottom: 4 }} />
-          <Text style={styles.body}>Tap study items. Ignore distractions.</Text>
+          <AnimatedGuide placeholder="focus" label="Resist distractions" width={120} height={120} style={{ marginTop: 32, marginBottom: 32 }} />
+          <Text style={[styles.body, { color: colors.text }]}>Tap study items. Ignore distractions.</Text>
 
-          <Text style={styles.exampleLabel}>TAP ✓</Text>
-          <View style={[styles.notifCard, styles.goCard]}>
-            <Text style={styles.notifIcon}>{GO[0].icon}</Text>
-            <View style={styles.notifText}>
-              <Text style={styles.notifLabel}>{GO[0].label}</Text>
-            </View>
-            <View style={styles.goTag}><Text style={styles.goTagText}>TAP</Text></View>
-          </View>
-
-          <Text style={[styles.exampleLabel, { marginTop: 8 }]}>IGNORE ✗</Text>
-          <View style={[styles.notifCard, styles.nogoCard]}>
-            <Text style={styles.notifIcon}>{NOGO[0].icon}</Text>
-            <View style={styles.notifText}>
-              <Text style={styles.notifLabel}>{NOGO[0].label}</Text>
-            </View>
-            <View style={styles.nogoTag}><Text style={styles.nogoTagText}>IGNORE</Text></View>
-          </View>
-
-          <View style={styles.ruleCard}>
+          <View style={[styles.ruleCard, { backgroundColor: colors.surface }]}>
             <Text style={styles.ruleItem}>⏱ 1.5s per card · 🎯 25 trials · 📈 Adjusts each session</Text>
           </View>
 
           {lastSession && (
-            <View style={styles.lastCard}>
+            <View style={[styles.lastCard, { backgroundColor: colors.surface }]}>
               <Text style={styles.lastTitle}>Last session</Text>
               <Text style={styles.lastStat}>Brake score: <Text style={{ fontWeight: '800' }}>{lastSession.brakeScore}</Text></Text>
               <Text style={styles.lastStat}>False alarms: {lastSession.faRate}%</Text>
@@ -253,11 +250,11 @@ export default function FocusControl({ navigation }) {
     const progress = (trialIdx + (isFeedback ? 1 : 0)) / TRIAL_COUNT;
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.progressBg}>
           <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
         </View>
-        <Text style={styles.trialCounter}>
+        <Text style={[styles.trialCounter, { color: colors.text }]}>
           Trial {trialIdx + (isFeedback ? 1 : 0)} / {TRIAL_COUNT}
         </Text>
 
@@ -276,8 +273,8 @@ export default function FocusControl({ navigation }) {
             ]}>
               <Text style={styles.notifIcon}>{trial.icon}</Text>
               <View style={styles.notifText}>
-                <Text style={styles.notifLabel}>{trial.label}</Text>
-                <Text style={styles.notifSub}>{trial.sub}</Text>
+                <Text style={[styles.notifLabel, { color: colors.text }]}>{trial.label}</Text>
+                <Text style={[styles.notifSub, { color: colors.text }]}>{trial.sub}</Text>
               </View>
               {isFeedback && fb && (
                 <View style={[styles.fbBadge, { backgroundColor: fb.color }]}>
@@ -317,7 +314,7 @@ export default function FocusControl({ navigation }) {
   if (phase === PHASE.RESULTS) {
     const session = focusControlSessions[focusControlSessions.length - 1];
     if (!session) return null;
-    const { brakeScore, hitRate, faRate, resisted } = session;
+    const { brakeScore, hitRate, faRate, resisted, dPrime } = session;
     const emoji = brakeScore >= 80 ? '🧠' : brakeScore >= 60 ? '💪' : '🔄';
     const prev = focusControlSessions.length >= 2
       ? focusControlSessions[focusControlSessions.length - 2] : null;
@@ -331,18 +328,18 @@ export default function FocusControl({ navigation }) {
       : `${resisted.length} resisted. The brake gets faster with practice.`;
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.bigEmoji}>{emoji}</Text>
-          <Text style={styles.scoreLabel}>BRAKE SCORE</Text>
-          <Text style={styles.scoreValue}>{brakeScore}</Text>
+          <Text style={[styles.bigEmoji, { color: colors.text }]}>{emoji}</Text>
+          <Text style={[styles.scoreLabel, { color: colors.text }]}>BRAKE SCORE</Text>
+          <Text style={[styles.scoreValue, { color: colors.text }]}>{brakeScore}</Text>
           {delta !== null && (
             <Text style={[styles.delta, { color: delta >= 0 ? '#4CAF50' : '#F44336' }]}>
               {delta >= 0 ? `▲ +${delta}` : `▼ ${delta}`} from last session
             </Text>
           )}
 
-          <View style={styles.metricsCard}>
+          <View style={[styles.metricsCard, { backgroundColor: colors.surface }]}>
             {[
               { label: 'Hit rate',     value: hitRate, color: '#4CAF50' },
               { label: 'False alarms', value: faRate,  color: '#F44336' },
@@ -355,6 +352,15 @@ export default function FocusControl({ navigation }) {
                 <Text style={[styles.metricValue, { color: m.color }]}>{m.value}%</Text>
               </View>
             ))}
+            {dPrime != null && (
+              <View style={[styles.metricRow, { marginTop: 8, borderTopWidth: 1, borderColor: '#F0F0F0', paddingTop: 8 }]}>
+                <Text style={styles.metricLabel}>d-prime (sensitivity)</Text>
+                <View style={styles.metricBarBg}>
+                  <View style={[styles.metricBarFill, { width: `${Math.min(100, dPrime / 4 * 100)}%`, backgroundColor: colors.primary }]} />
+                </View>
+                <Text style={[styles.metricValue, { color: colors.primary }]}>{dPrime?.toFixed(2)}</Text>
+              </View>
+            )}
           </View>
 
           {uniqueResisted.length > 0 && (
@@ -364,7 +370,7 @@ export default function FocusControl({ navigation }) {
             </View>
           )}
 
-          <View style={styles.connectionCard}>
+          <View style={[styles.connectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={styles.connectionMsg}>💡 {msg}</Text>
             <Text style={styles.connectionSub}>
               This is the same mental brake you use when your phone lights up during homework.
@@ -386,9 +392,7 @@ export default function FocusControl({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 24, paddingBottom: 16 },
-  backBtn: { marginBottom: 16 },
-  backBtnText: { fontSize: 15, color: colors.primary, fontWeight: '600' },
+  content: { padding: 20, paddingTop: 8, paddingBottom: 16 },
   headlineRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
   goalCard: { backgroundColor: colors.primaryLight, borderRadius: 10, padding: 10, marginBottom: 14, borderWidth: 1, borderColor: colors.primary + '40' },
   goalText: { fontSize: 13, color: colors.primary, fontWeight: '700' },

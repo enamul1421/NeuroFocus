@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity,
   ScrollView, Alert,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useStore } from '../../store';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
 import { scheduleWeeklyReview, formatDate } from './utils';
 import { logSession } from '../../services/logger';
 
@@ -17,7 +17,9 @@ const GRADE_OPTIONS = [
   { value: 5, label: 'Nailed it',       emoji: '😄', color: '#4CAF50' },
 ];
 
-export default function WeeklyReview({ navigation }) {
+export default function WeeklyReview({
+  navigation }) {
+  const colors = useColors();
   const {
     plannerTasks, updatePlannerTask, addWeeklyReview,
     reviewNotificationTime, setReviewNotificationTime, participantCode,
@@ -81,7 +83,7 @@ export default function WeeklyReview({ navigation }) {
       ? (Object.values(grades).reduce((a, b) => a + b, 0) / gradedCount).toFixed(1)
       : 0;
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.content}>
           <Text style={styles.doneEmoji}>
             {avg >= 4 ? '🌟' : avg >= 3 ? '💪' : '🔄'}
@@ -104,14 +106,14 @@ export default function WeeklyReview({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>← Back</Text>
         </TouchableOpacity>
 
-        <Text style={styles.headline}>Weekly Review</Text>
-        <Text style={styles.body}>
+        <Text style={[styles.headline, { color: colors.text }]}>Weekly Review</Text>
+        <Text style={[styles.body, { color: colors.text }]}>
           How did last week go? Grade each active task. This takes 2 minutes.
         </Text>
 

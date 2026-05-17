@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity, ScrollView,
 } from 'react-native';
 import { useStore } from '../../../store';
-import { colors } from '../../../theme';
+import { colors, useColors } from '../../../theme';
 import { logSession } from '../../../services/logger';
 import SpeakButton from '../../../components/SpeakButton';
 import AnimatedGuide from '../../../components/AnimatedGuide';
+import SessionProgress from '../../../components/SessionProgress';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -54,7 +55,9 @@ function genSequence(mode, level) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function MemoryBank({ navigation }) {
+export default function MemoryBank({
+  navigation }) {
+  const colors = useColors();
   const {
     addMemoryBankSession, memoryBankSessions,
     memoryBankLevels, setMemoryBankLevel, participantCode,
@@ -206,27 +209,25 @@ export default function MemoryBank({ navigation }) {
 
   if (phase === PHASE.INTRO) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backBtnText}>← Back</Text>
-          </TouchableOpacity>
 
-          <Text style={styles.moduleTag}>🧠 MemoryBank</Text>
-          <Text style={styles.headline}>Train your working memory</Text>
-          <SpeakButton text="See a sequence, remember it, recall it. Choose a mode below to start. Level adjusts to keep you challenged." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+
+          <Text style={[styles.moduleTag, { color: colors.text }]}>🧠 MemoryBank</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Train your working memory</Text>
+          <SpeakButton text="Our brains are incredible at making connections and spotting patterns — and we can absolutely train our working memory to get even stronger. In this exercise, we see a sequence, hold it in our mind, and recall it. Every round builds real mental muscle. Scientists have shown that working memory training improves focus, planning, and learning. Session by session, we level up and our brain adapts to handle more. We are not forgetful — we are training. Let's go." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
           <AnimatedGuide placeholder="memory" label="See · Remember · Recall" width={110} height={110} />
-          <Text style={styles.body}>See a sequence · remember · recall.</Text>
+          <Text style={[styles.body, { color: colors.text }]}>See a sequence · remember · recall.</Text>
 
           {Object.entries(MODES).map(([key, m]) => {
             const lvl = memoryBankLevels[key] ?? 3;
             const lastSession = [...memoryBankSessions].reverse().find(s => s.mode === key);
             return (
-              <TouchableOpacity key={key} style={styles.modeCard} onPress={() => startSession(key)}>
+              <TouchableOpacity key={key} style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => startSession(key)}>
                 <Text style={styles.modeIcon}>{m.icon}</Text>
                 <View style={styles.modeCardMid}>
-                  <Text style={styles.modeLabel}>{m.label}</Text>
-                  <Text style={styles.modeDesc}>{m.desc}</Text>
+                  <Text style={[styles.modeLabel, { color: colors.text }]}>{m.label}</Text>
+                  <Text style={[styles.modeDesc, { color: colors.text }]}>{m.desc}</Text>
                   {lastSession && (
                     <Text style={styles.modeHistory}>Last: Level {lastSession.maxLevel}</Text>
                   )}
@@ -256,7 +257,7 @@ export default function MemoryBank({ navigation }) {
     const isRecall   = playState === PS.RECALL;
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
         <View style={styles.playHeader}>
           <Text style={styles.playRound}>{roundsDone + 1} / {ROUNDS}</Text>
@@ -409,16 +410,16 @@ export default function MemoryBank({ navigation }) {
     const delta = prev ? maxLevel - prev.maxLevel : null;
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.bigEmoji}>{emoji}</Text>
+          <Text style={[styles.bigEmoji, { color: colors.text }]}>{emoji}</Text>
           {isNewBest && (
             <View style={styles.newBestBanner}>
               <Text style={styles.newBestText}>🏆 New personal best!</Text>
             </View>
           )}
-          <Text style={styles.scoreLabel}>HIGHEST LEVEL</Text>
-          <Text style={styles.scoreValue}>{maxLevel}</Text>
+          <Text style={[styles.scoreLabel, { color: colors.text }]}>HIGHEST LEVEL</Text>
+          <Text style={[styles.scoreValue, { color: colors.text }]}>{maxLevel}</Text>
           <Text style={styles.levelMeaning}>{LEVEL_LABELS[maxLevel] ?? ''}</Text>
 
           {delta !== null && (
@@ -427,7 +428,7 @@ export default function MemoryBank({ navigation }) {
             </Text>
           )}
 
-          <View style={styles.metricsCard}>
+          <View style={[styles.metricsCard, { backgroundColor: colors.surface }]}>
             <View style={styles.metricRow}>
               <Text style={styles.metricLabel}>Accuracy</Text>
               <View style={styles.metricBarBg}>
@@ -443,7 +444,7 @@ export default function MemoryBank({ navigation }) {
             </View>
           </View>
 
-          <View style={styles.connectionCard}>
+          <View style={[styles.connectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={styles.connectionMsg}>
               💡 {maxLevel >= 6
                 ? "You held 6+ items in working memory today — enough to follow multi-step instructions without losing track."
@@ -488,9 +489,7 @@ export default function MemoryBank({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content:   { padding: 24, paddingBottom: 16 },
-  backBtn:   { marginBottom: 16 },
-  backBtnText: { fontSize: 15, color: colors.primary, fontWeight: '600' },
+  content:   { padding: 20, paddingTop: 8, paddingBottom: 16 },
   moduleTag: { fontSize: 12, fontWeight: '800', color: colors.primary, letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' },
   headlineRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 6 },
   headline:  { fontSize: 24, fontWeight: '800', color: colors.text, marginBottom: 6 },

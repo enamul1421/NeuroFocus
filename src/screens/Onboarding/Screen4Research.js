@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { useStore } from '../../store';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
 
-export default function Screen4Research({ navigation }) {
+export default function Screen4Research({
+  navigation }) {
+  const colors = useColors();
   const { setOnboardingData, completeOnboarding } = useStore(s => ({
     setOnboardingData: s.setOnboardingData,
     completeOnboarding: s.completeOnboarding,
@@ -23,10 +25,10 @@ export default function Screen4Research({ navigation }) {
   const canFinish = inStudy === false || (inStudy === true && code.trim().length >= 3);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.step}>Step 3 of 3</Text>
-        <Text style={styles.headline}>Research study</Text>
+        <Text style={[styles.headline, { color: colors.text }]}>Research study</Text>
         <Text style={styles.note}>
           NeuroFocus is also a research study at Westview High School.
           If you're participating, your session data is logged anonymously

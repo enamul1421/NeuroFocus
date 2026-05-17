@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity, ScrollView,
 } from 'react-native';
 import { useStore } from '../../store';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
 
 const TASK_COLORS = {
   test: '#F44336', quiz: '#FF9800', essay: '#9C27B0',
@@ -31,7 +31,9 @@ function fmtMins(mins) {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-export default function WeeklyCalendar({ navigation }) {
+export default function WeeklyCalendar({
+  navigation }) {
+  const colors = useColors();
   const plannerTasks = useStore(s => s.plannerTasks || []);
   const [weekStart, setWeekStart] = useState(() => getMondayOf(new Date()));
   const [selectedDay, setSelectedDay] = useState(() => new Date().toDateString());
@@ -90,16 +92,16 @@ export default function WeeklyCalendar({ navigation }) {
   const visibleDays = selectedDay ? weekDays.filter(d => d.toDateString() === selectedDay) : weekDays;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backBtn}>← Back</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.title}>Calendar</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Calendar</Text>
           {totalSessions > 0 && (
-            <Text style={styles.subtitle}>{totalSessions} session{totalSessions !== 1 ? 's' : ''} this week</Text>
+            <Text style={[styles.subtitle, { color: colors.text }]}>{totalSessions} session{totalSessions !== 1 ? 's' : ''} this week</Text>
           )}
         </View>
         <TouchableOpacity onPress={() => { setWeekStart(getMondayOf(new Date())); setSelectedDay(null); }}>

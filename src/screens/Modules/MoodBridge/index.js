@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity,
   ScrollView, TextInput, Animated,
 } from 'react-native';
 import BodyDiagram from '../../../components/BodyDiagram';
 import SpeakButton, { speak, stopSpeech } from '../../../components/SpeakButton';
 import AnimatedGuide from '../../../components/AnimatedGuide';
+import SessionProgress from '../../../components/SessionProgress';
 import { useStore } from '../../../store';
-import { colors } from '../../../theme';
+import { colors, useColors } from '../../../theme';
 import { logSession } from '../../../services/logger';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -29,11 +30,11 @@ const WORD_CLUSTERS = {
 };
 
 const VALIDATIONS = {
-  1: 'These are some of the hardest feelings. You noticed them — that takes courage.',
-  2: 'Tough feelings are more common with ADHD. You\'re not alone in this.',
-  3: 'Sometimes so-so is where we are. That\'s okay — let\'s see if we can shift it.',
-  4: 'Nice. This is a good place to build from.',
-  5: 'Great to hear. A quick exercise can help lock this in.',
+  1: 'We all have hard days. Noticing what we feel — that is the first brave step.',
+  2: 'Our brains feel deeply. That is a strength, and we are not alone in this.',
+  3: 'So-so is a valid place to be. Let\'s see if we can shift our energy a little.',
+  4: 'We are in a good place. Let\'s build on this momentum.',
+  5: 'We are doing great. A quick exercise can help us lock this in.',
 };
 
 const WORD_TO_EXERCISE = {
@@ -75,27 +76,27 @@ const EXERCISES = {
 };
 
 const GROUNDING_STEPS = [
-  { n: 5, sense: 'see',   prompt: 'Look around. Name 5 things you can see right now.' },
-  { n: 4, sense: 'feel',  prompt: 'Name 4 things you can physically feel — your clothes, the floor, the air.' },
-  { n: 3, sense: 'hear',  prompt: 'Name 3 things you can hear right now.' },
-  { n: 2, sense: 'smell', prompt: 'Name 2 things you can smell — or notice the absence of smell.' },
-  { n: 1, sense: 'taste', prompt: 'Name 1 thing you can taste right now.' },
+  { n: 5, sense: 'see',   prompt: 'Look around. Let\'s name 5 things we can see right now.' },
+  { n: 4, sense: 'feel',  prompt: 'Let\'s name 4 things we can physically feel — our clothes, the floor, the air.' },
+  { n: 3, sense: 'hear',  prompt: 'Let\'s name 3 things we can hear right now.' },
+  { n: 2, sense: 'smell', prompt: 'Let\'s name 2 things we can smell — or notice the absence of smell.' },
+  { n: 1, sense: 'taste', prompt: 'Let\'s name 1 thing we can taste right now.' },
 ];
 
 const BODY_REGIONS = [
-  { id: 'head',      label: 'Head & mind',    prompt: 'Notice your head and jaw. Any clenching or buzzing? Take a breath and let it soften.' },
-  { id: 'shoulders', label: 'Shoulders',      prompt: 'Notice your shoulders. Are they raised or tight? Let them drop on the exhale.' },
-  { id: 'chest',     label: 'Chest & heart',  prompt: 'Notice your chest. Is your breathing shallow or full? Take a slow, deep breath.' },
-  { id: 'stomach',   label: 'Stomach',        prompt: 'Notice your stomach. Any knots or tightness? Breathe into this area.' },
-  { id: 'arms',      label: 'Hands & arms',   prompt: 'Notice your hands. Are they clenched? Open your palms and let them relax.' },
-  { id: 'legs',      label: 'Feet & legs',    prompt: 'Notice your feet. Press them gently into the floor. Feel grounded.' },
+  { id: 'head',      label: 'Head & mind',    prompt: 'Let\'s notice our head and jaw. Any clenching or buzzing? Take a breath and let it soften.' },
+  { id: 'shoulders', label: 'Shoulders',      prompt: 'Let\'s notice our shoulders. Are they raised or tight? Let them drop on the exhale.' },
+  { id: 'chest',     label: 'Chest & heart',  prompt: 'Let\'s notice our chest. Is our breathing shallow or full? Let\'s take a slow, deep breath together.' },
+  { id: 'stomach',   label: 'Stomach',        prompt: 'Let\'s notice our stomach. Any tightness here? Let\'s breathe into this area and release it.' },
+  { id: 'arms',      label: 'Hands & arms',   prompt: 'Let\'s notice our hands. Are they clenched? Let\'s open our palms and let them relax.' },
+  { id: 'legs',      label: 'Feet & legs',    prompt: 'Let\'s notice our feet. Press them gently into the floor. We are grounded and steady.' },
 ];
 
 const REAPPRAISAL_PROMPTS = [
-  'What\'s stressing you right now? (Just a few words is fine)',
-  'What\'s one thing that could go okay about this situation?',
+  'What is stressing us right now? (Just a few words is fine)',
+  'What is one thing that could go okay about this situation?',
   'Would this still matter a year from now?',
-  'What would you tell a close friend who was going through this?',
+  'What would we tell a close friend going through exactly this?',
 ];
 
 const BREATHING_PHASES = [
@@ -117,7 +118,9 @@ const P = {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function MoodBridge({ navigation }) {
+export default function MoodBridge({
+  navigation }) {
+  const colors = useColors();
   const { addMoodBridgeSession, moodBridgeSessions, participantCode } =
     useStore(s => ({
       addMoodBridgeSession: s.addMoodBridgeSession,
@@ -235,26 +238,35 @@ export default function MoodBridge({ navigation }) {
   // RENDERS
   // ─────────────────────────────────────────────────────────────────────────
 
+  const moodStep = { pre_emoji:0, pre_word:1, safety:2, framing:3, ex_select:4, exercise:5, post_emoji:6, post_word:7, results:8 }[phase] ?? 0;
+
   // ── Pre/Post emoji check ───────────────────────────────────────────────────
   const isPost = phase === P.POST_EMOJI;
   if (phase === P.PRE_EMOJI || phase === P.POST_EMOJI) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <SessionProgress current={moodStep} total={8} />
         <View style={styles.content}>
           <TouchableOpacity onPress={() => phase === P.PRE_EMOJI ? navigation.goBack() : null}
             style={styles.backBtn}>
             {phase === P.PRE_EMOJI && <Text style={styles.backBtnText}>← Back</Text>}
           </TouchableOpacity>
-          <Text style={styles.moduleTag}>🌊 MoodBridge</Text>
-          <Text style={styles.headline}>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>🌊 MoodBridge</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>
             {isPost ? 'How do you feel now?' : 'How are you feeling?'}
           </Text>
           {!isPost && (
-            <View style={styles.goalCard}>
-              <Text style={styles.goalText}>🎯 Goal: Mood improves from pre to post session</Text>
-            </View>
+            <>
+              <SpeakButton
+                text="Our brains feel emotions more deeply and intensely than most — that is one of our greatest strengths. And just like any strength, we can learn to channel it. Every time we name what we feel and do a short exercise, we train our brain to move through emotions faster and stronger. We are not too emotional — we are powerful. Let us check in and take care of ourselves right now."
+                style={{ alignSelf: 'flex-start', marginBottom: 8 }}
+              />
+              <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.goalText, { color: colors.text }]}>🎯 Goal: Mood improves from pre to post session</Text>
+              </View>
+            </>
           )}
-          <Text style={styles.body}>Tap the closest match.</Text>
+          <Text style={[styles.body, { color: colors.text }]}>Tap the closest match.</Text>
           <View style={styles.emojiRow}>
             {EMOJIS.map(e => (
               <TouchableOpacity
@@ -287,15 +299,16 @@ export default function MoodBridge({ navigation }) {
     const words = WORD_CLUSTERS[score] || [];
     const emoji = EMOJIS.find(e => e.score === score);
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <SessionProgress current={moodStep} total={8} />
         <View style={styles.content}>
-          <Text style={styles.moduleTag}>🌊 MoodBridge</Text>
-          <Text style={styles.headline}>{emoji?.icon} Which word fits best?</Text>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>🌊 MoodBridge</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>{emoji?.icon} Which word fits best?</Text>
           <View style={styles.wordGrid}>
             {words.map(w => (
               <TouchableOpacity
                 key={w}
-                style={styles.wordChip}
+                style={[styles.wordChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
                 onPress={() => {
                   if (isPostWord) {
                     finishSession(postScore, w);
@@ -309,8 +322,8 @@ export default function MoodBridge({ navigation }) {
               </TouchableOpacity>
             ))}
           </View>
-          <View style={styles.validationCard}>
-            <Text style={styles.validationText}>{VALIDATIONS[score]}</Text>
+          <View style={[styles.validationCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.validationText, { color: colors.text }]}>{VALIDATIONS[score]}</Text>
           </View>
         </View>
       </SafeAreaView>
@@ -320,10 +333,11 @@ export default function MoodBridge({ navigation }) {
   // ── Safety note (score === 1 only) ─────────────────────────────────────────
   if (phase === P.SAFETY) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <SessionProgress current={moodStep} total={8} />
         <View style={styles.content}>
-          <Text style={styles.moduleTag}>🌊 MoodBridge</Text>
-          <View style={styles.safetyCard}>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>🌊 MoodBridge</Text>
+          <View style={[styles.safetyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={styles.safetyTitle}>One thing first</Text>
             <Text style={styles.safetyText}>
               These feelings are real and valid. If things feel too heavy to handle alone, please talk to someone you trust — a parent, teacher, or school counselor.
@@ -351,21 +365,22 @@ export default function MoodBridge({ navigation }) {
     const prescribed = WORD_TO_EXERCISE[preWord] || 'breathing';
     const ex = EXERCISES[prescribed];
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <SessionProgress current={moodStep} total={8} />
         <View style={styles.content}>
-          <Text style={styles.moduleTag}>🌊 MoodBridge</Text>
-          <Text style={styles.headline}>Why this works</Text>
-          <View style={styles.framingCard}>
-            <Text style={styles.framingText}>
-              ADHD brains feel emotions more intensely than average — and take longer to recover. That's biology, not weakness.
-              {'\n\n'}These exercises train your brain's emotional brake. It gets faster with practice.
+          <Text style={[styles.moduleTag, { color: colors.text }]}>🌊 MoodBridge</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Why this works</Text>
+          <View style={[styles.framingCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.framingText, { color: colors.text }]}>
+              Our brains feel emotions deeply and powerfully — that is a real strength. With practice, we can also get faster at returning to calm. That is biology working for us.
+              {'\n\n'}These exercises train our brain's emotional resilience. We get stronger every session.
             </Text>
           </View>
-          <View style={styles.selectedWordCard}>
+          <View style={[styles.selectedWordCard, { backgroundColor: colors.surface }]}>
             <Text style={styles.selectedWordLabel}>You're feeling</Text>
             <Text style={styles.selectedWord}>{EMOJIS.find(e => e.score === preScore)?.icon} {preWord}</Text>
           </View>
-          <View style={styles.prescribedCard}>
+          <View style={[styles.prescribedCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={styles.prescribedLabel}>Your exercise</Text>
             <Text style={styles.prescribedName}>{ex?.icon} {ex?.label}</Text>
             <Text style={styles.prescribedDesc}>{ex?.desc}</Text>
@@ -385,10 +400,11 @@ export default function MoodBridge({ navigation }) {
   if (phase === P.EX_SELECT) {
     const suggested = WORD_TO_EXERCISE[preWord] || 'breathing';
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <SessionProgress current={moodStep} total={8} />
         <View style={styles.content}>
-          <Text style={styles.moduleTag}>🌊 MoodBridge</Text>
-          <Text style={styles.headline}>Choose your exercise</Text>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>🌊 MoodBridge</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>Choose your exercise</Text>
           {Object.entries(EXERCISES).map(([key, ex]) => {
             const isSuggested = key === suggested;
             return (
@@ -424,7 +440,7 @@ export default function MoodBridge({ navigation }) {
       const bp = BREATHING_PHASES[breathPhaseIdx];
       return (
         <SafeAreaView style={[styles.container, styles.exerciseContainer]}>
-          <Text style={styles.exTitle}>Box Breathing</Text>
+          <Text style={[styles.exTitle, { color: colors.text }]}>Box Breathing</Text>
           <Text style={styles.exSubtitle}>Cycle {breathCycle + 1} of {BREATHING_CYCLES}</Text>
           <View style={styles.breathArea}>
             <Animated.View style={[styles.breathCircle, {
@@ -435,7 +451,7 @@ export default function MoodBridge({ navigation }) {
               <Text style={[styles.breathPhaseLabel, { color: bp?.color }]}>{bp?.label}</Text>
             </Animated.View>
           </View>
-          <Text style={styles.breathHint}>Follow the circle — breathe with it</Text>
+          <Text style={[styles.breathHint, { color: colors.text }]}>Follow the circle — breathe with it</Text>
         </SafeAreaView>
       );
     }
@@ -444,21 +460,21 @@ export default function MoodBridge({ navigation }) {
     if (exercise === 'grounding') {
       const step = GROUNDING_STEPS[exStep];
       return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
           <View style={styles.exProgressBg}>
             <View style={[styles.exProgressFill, { width: `${((exStep) / GROUNDING_STEPS.length) * 100}%` }]} />
           </View>
           <View style={styles.content}>
             <View style={styles.exTitleRow}>
-              <Text style={styles.exTitle}>5-4-3-2-1 Grounding</Text>
+              <Text style={[styles.exTitle, { color: colors.text }]}>5-4-3-2-1 Grounding</Text>
               <SpeakButton text={step.prompt} size="sm" />
             </View>
             <AnimatedGuide placeholder="grounding" label="Notice your surroundings" width={140} height={140} />
-            <View style={styles.groundingCard}>
+            <View style={[styles.groundingCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={styles.groundingNum}>{step.n}</Text>
-              <Text style={styles.groundingPrompt}>{step.prompt}</Text>
+              <Text style={[styles.groundingPrompt, { color: colors.text }]}>{step.prompt}</Text>
             </View>
-            <Text style={styles.groundingHint}>Take your time.</Text>
+            <Text style={[styles.groundingHint, { color: colors.text }]}>Take your time.</Text>
             <TouchableOpacity
               style={styles.primaryBtn}
               onPress={() => {
@@ -484,9 +500,9 @@ export default function MoodBridge({ navigation }) {
         const others = allWords.filter(w => !cluster.includes(w));
         const display = [...cluster, ...others.slice(0, 6)];
         return (
-          <SafeAreaView style={styles.container}>
+          <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <ScrollView contentContainerStyle={styles.content}>
-              <Text style={styles.exTitle}>Emotion Labeling</Text>
+              <Text style={[styles.exTitle, { color: colors.text }]}>Emotion Labeling</Text>
               <Text style={styles.exSubtitle}>Tap everything you're feeling right now</Text>
               <View style={styles.wordGrid}>
                 {display.map(w => (
@@ -515,9 +531,9 @@ export default function MoodBridge({ navigation }) {
       if (exStep === 1) {
         const bodyLabel = BODY_REGIONS.find(r => r.id === labelBody)?.label;
         return (
-          <SafeAreaView style={styles.container}>
+          <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <View style={[styles.content, { alignItems: 'center' }]}>
-              <Text style={styles.exTitle}>Where do you feel it?</Text>
+              <Text style={[styles.exTitle, { color: colors.text }]}>Where do you feel it?</Text>
               <Text style={styles.exSubtitle}>Tap where you feel {labelWords[0]}</Text>
               <BodyDiagram
                 mode="labeling"
@@ -542,16 +558,16 @@ export default function MoodBridge({ navigation }) {
       if (exStep === 2) {
         const bodyLabel = BODY_REGIONS.find(r => r.id === labelBody)?.label;
         return (
-          <SafeAreaView style={styles.container}>
+          <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <View style={styles.content}>
-              <Text style={styles.exTitle}>Name it to tame it</Text>
-              <View style={styles.labelAffirmCard}>
-                <Text style={styles.labelAffirmWords}>
+              <Text style={[styles.exTitle, { color: colors.text }]}>Name it to tame it</Text>
+              <View style={[styles.labelAffirmCard, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.labelAffirmWords, { color: colors.text }]}>
                   {labelWords.join(' · ')}
                 </Text>
-                <Text style={styles.labelAffirmBody}>felt in: {bodyLabel}</Text>
-                <Text style={styles.labelAffirmText}>
-                  You just activated your prefrontal cortex by naming what you feel. That's your brain's brake engaging. It takes milliseconds — and it's real.
+                <Text style={[styles.labelAffirmBody, { color: colors.text }]}>felt in: {bodyLabel}</Text>
+                <Text style={[styles.labelAffirmText, { color: colors.text }]}>
+                  We just activated our prefrontal cortex by naming what we feel. That is our brain's resilience engaging. It takes milliseconds — and it is real and powerful.
                 </Text>
               </View>
               <TouchableOpacity style={styles.primaryBtn} onPress={() => setPhase(P.POST_EMOJI)}>
@@ -567,14 +583,14 @@ export default function MoodBridge({ navigation }) {
     if (exercise === 'reappraisal') {
       const prompt = REAPPRAISAL_PROMPTS[exStep];
       return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
           <View style={styles.exProgressBg}>
             <View style={[styles.exProgressFill, { width: `${(exStep / REAPPRAISAL_PROMPTS.length) * 100}%` }]} />
           </View>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            <Text style={styles.exTitle}>Positive Reappraisal</Text>
+            <Text style={[styles.exTitle, { color: colors.text }]}>Positive Reappraisal</Text>
             <Text style={styles.exSubtitle}>Step {exStep + 1} of {REAPPRAISAL_PROMPTS.length}</Text>
-            <View style={styles.reappraisalCard}>
+            <View style={[styles.reappraisalCard, { backgroundColor: colors.surface }]}>
               <View style={styles.promptRow}>
                 <Text style={[styles.reappraisalPrompt, { flex: 1 }]}>{prompt}</Text>
                 <SpeakButton text={prompt} size="sm" />
@@ -613,15 +629,15 @@ export default function MoodBridge({ navigation }) {
       const region = BODY_REGIONS[bodyRegionIdx];
       return (
         <SafeAreaView style={[styles.container, styles.exerciseContainer]}>
-          <Text style={styles.exTitle}>Body Scan</Text>
+          <Text style={[styles.exTitle, { color: colors.text }]}>Body Scan</Text>
           <BodyDiagram
             mode="scan"
             activeId={region?.id}
             width={100} height={240}
           />
-          <View style={styles.bodyScanCard}>
-            <Text style={styles.bodyScanRegion}>{region?.label}</Text>
-            <Text style={styles.bodyScanPrompt}>{region?.prompt}</Text>
+          <View style={[styles.bodyScanCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.bodyScanRegion, { color: colors.text }]}>{region?.label}</Text>
+            <Text style={[styles.bodyScanPrompt, { color: colors.text }]}>{region?.prompt}</Text>
           </View>
           <Text style={styles.bodyScanHint}>Breathe slowly. The next area will come.</Text>
         </SafeAreaView>
@@ -640,22 +656,22 @@ export default function MoodBridge({ navigation }) {
     )].length;
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.moduleTag}>🌊 MoodBridge</Text>
+          <Text style={[styles.moduleTag, { color: colors.text }]}>🌊 MoodBridge</Text>
 
           {/* Before / after */}
           <View style={styles.moodDeltaRow}>
-            <View style={styles.moodDeltaBox}>
+            <View style={[styles.moodDeltaBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={styles.moodDeltaEmoji}>{preEmoji?.icon}</Text>
-              <Text style={styles.moodDeltaWord}>{preWord}</Text>
-              <Text style={styles.moodDeltaLabel}>Before</Text>
+              <Text style={[styles.moodDeltaWord, { color: colors.text }]}>{preWord}</Text>
+              <Text style={[styles.moodDeltaLabel, { color: colors.text }]}>Before</Text>
             </View>
             <Text style={styles.moodArrow}>→</Text>
-            <View style={styles.moodDeltaBox}>
+            <View style={[styles.moodDeltaBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={styles.moodDeltaEmoji}>{postEmoji?.icon}</Text>
-              <Text style={styles.moodDeltaWord}>{postWord}</Text>
-              <Text style={styles.moodDeltaLabel}>After</Text>
+              <Text style={[styles.moodDeltaWord, { color: colors.text }]}>{postWord}</Text>
+              <Text style={[styles.moodDeltaLabel, { color: colors.text }]}>After</Text>
             </View>
           </View>
 
@@ -667,24 +683,24 @@ export default function MoodBridge({ navigation }) {
             </Text>
           )}
 
-          <View style={styles.exUsedCard}>
+          <View style={[styles.exUsedCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={styles.exUsedLabel}>Exercise used</Text>
             <Text style={styles.exUsedName}>{ex?.icon} {ex?.label}</Text>
           </View>
 
           {totalWords > 0 && (
-            <View style={styles.vocabCard}>
+            <View style={[styles.vocabCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Text style={styles.vocabTitle}>🏷️ Emotion vocabulary</Text>
               <Text style={styles.vocabCount}>{totalWords} different words used across all sessions</Text>
               <Text style={styles.vocabSub}>More words = more precision = better regulation</Text>
             </View>
           )}
 
-          <View style={styles.connectionCard}>
+          <View style={[styles.connectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={styles.connectionText}>
               💡 {delta > 0
-                ? 'Naming your emotion + doing the exercise activated your prefrontal cortex — your brain\'s natural regulator.'
-                : 'Some days are harder. Showing up and practicing is what builds the skill over time.'}
+                ? 'Naming our emotion and doing the exercise activated our prefrontal cortex — our brain\'s natural strength. We are building real resilience.'
+                : 'Some sessions are harder than others. Showing up and practicing is exactly what builds the skill over time. We are doing great.'}
             </Text>
           </View>
           <View style={{ height: 24 }} />

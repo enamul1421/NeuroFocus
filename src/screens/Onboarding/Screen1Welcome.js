@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors, typography } from '../../theme';
 
 export default function Screen1Welcome({ navigation }) {

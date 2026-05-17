@@ -1,11 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity,
   ScrollView, Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useStore } from '../../store';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
+import SpeakButton from '../../components/SpeakButton';
 import {
   getHorizon, HORIZON_LABELS, formatDate, formatTime, daysUntil,
   cancelStepNotification,
@@ -19,13 +20,29 @@ const TASK_TYPE_ICONS = {
 
 const HORIZONS = ['this_week', 'next_2_3_weeks', 'next_4_6_weeks', 'overdue'];
 
-export default function WeeklyPlanner({ navigation }) {
-  const { plannerTasks, updatePlannerTask, deletePlannerTask, markStepComplete } = useStore(s => ({
-    plannerTasks: s.plannerTasks || [],
-    updatePlannerTask: s.updatePlannerTask,
-    deletePlannerTask: s.deletePlannerTask,
-    markStepComplete: s.markStepComplete,
+export default function WeeklyPlanner({
+  navigation }) {
+  const colors = useColors();
+  const { plannerTasks, updatePlannerTask, deletePlannerTask, markStepComplete, weeklyCheckIns, ownershipReflections } = useStore(s => ({
+    plannerTasks:          s.plannerTasks          || [],
+    updatePlannerTask:     s.updatePlannerTask,
+    deletePlannerTask:     s.deletePlannerTask,
+    markStepComplete:      s.markStepComplete,
+    weeklyCheckIns:        s.weeklyCheckIns        || [],
+    ownershipReflections:  s.ownershipReflections  || [],
   }));
+
+  const isCheckInDue = (() => {
+    if (weeklyCheckIns.length === 0) return true;
+    const last = new Date(weeklyCheckIns[weeklyCheckIns.length - 1].date);
+    return (Date.now() - last.getTime()) / (1000 * 60 * 60 * 24) >= 6;
+  })();
+
+  const showOwnershipBanner = (() => {
+    const last = ownershipReflections[ownershipReflections.length - 1];
+    const days = last ? (Date.now() - new Date(last.date).getTime()) / (1000 * 60 * 60 * 24) : 999;
+    return (new Date().getDay() === 0 || days >= 6) && days > 0.5;
+  })();
 
   const [expanded, setExpanded] = useState({ this_week: true, next_2_3_weeks: true, next_4_6_weeks: false, overdue: false });
   const [, forceUpdate] = useState(0);
@@ -75,23 +92,42 @@ export default function WeeklyPlanner({ navigation }) {
   const totalActive = plannerTasks.length;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Weekly Planner</Text>
-        <Text style={styles.subtitle}>{totalActive} active task{totalActive !== 1 ? 's' : ''}</Text>
-        <View style={styles.goalCard}>
-          <Text style={styles.goalText}>🎯 Goal: Add tasks, schedule steps, review weekly</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Weekly Planner</Text>
+        <Text style={[styles.subtitle, { color: colors.text }]}>{totalActive} active task{totalActive !== 1 ? 's' : ''}</Text>
+        <SpeakButton
+          text="Our brains are wired to focus on what is urgent right now, not what is coming next week. That is why deadlines always feel like a surprise. Weekly Planner trains us to see the future and break big tasks into small steps before the panic hits. Every task we add and schedule builds our planning superpower. We are not disorganized — we are training."
+          style={{ marginBottom: 8 }}
+        />
+        <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
+          <Text style={styles.goalText}>🎯 Add tasks · schedule steps · check in · reflect</Text>
         </View>
         <View style={styles.headerButtons}>
-          <TouchableOpacity style={styles.calBtn} onPress={() => navigation.navigate('WeeklyCalendar')}>
-            <Text style={styles.calBtnText}>📅 Schedule View</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.reviewBtn} onPress={() => navigation.navigate('WeeklyReview')}>
-            <Text style={styles.reviewBtnText}>Score</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.addBtn} onPress={() => navigation.navigate('AddTask')}>
-            <Text style={styles.addBtnText}>+ New Task</Text>
-          </TouchableOpacity>
+          {[
+            { emoji: '➕', label: 'New Task',  route: 'AddTask',          due: false },
+            { emoji: '📅', label: 'Calendar', route: 'WeeklyCalendar',   due: false },
+            { emoji: '⭐', label: 'Review',   route: 'WeeklyReview',     due: false },
+            { emoji: '📊', label: 'Check-In', route: 'WeeklyCheckIn',    due: isCheckInDue },
+            { emoji: '🔍', label: 'Reflect',  route: 'OwnershipReflect', due: showOwnershipBanner },
+          ].map(btn => (
+            <TouchableOpacity
+              key={btn.route}
+              style={[
+                styles.iconBtn,
+                { borderColor: btn.due ? colors.primary : colors.border,
+                  backgroundColor: btn.due ? colors.primaryLight : colors.surface },
+              ]}
+              onPress={() => navigation.navigate(btn.route)}
+              activeOpacity={0.8}
+            >
+              {btn.due && <View style={styles.dueDot} />}
+              <Text style={styles.iconBtnEmoji}>{btn.emoji}</Text>
+              <Text style={[styles.iconBtnLabel, { color: btn.due ? colors.primary : colors.textLight }]}>
+                {btn.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
 
@@ -133,7 +169,7 @@ export default function WeeklyPlanner({ navigation }) {
                 const days = daysUntil(task.deadline);
 
                 return (
-                  <View key={task.id} style={styles.taskCard}>
+                  <View key={task.id} style={[styles.taskCard, { backgroundColor: colors.surface }]}>
                     {/* Task header */}
                     <View style={styles.taskHeader}>
                       <Text style={styles.taskIcon}>{TASK_TYPE_ICONS[task.type] || '📋'}</Text>
@@ -154,6 +190,14 @@ export default function WeeklyPlanner({ navigation }) {
                       <View style={[styles.progressBarFill, { width: `${progress * 100}%`, backgroundColor: info.color }]} />
                     </View>
                     <Text style={styles.progressLabel}>{completedSteps}/{totalSteps} steps done</Text>
+
+                    {/* Emotional anchor — shown when all steps complete */}
+                    {task.emotionalAnchor && completedSteps === totalSteps && totalSteps > 0 && (
+                      <View style={[styles.anchorCard, { backgroundColor: colors.primaryLight, borderColor: colors.primary + '40' }]}>
+                        <Text style={[styles.anchorLabel, { color: colors.primary }]}>✨ Why this mattered to us:</Text>
+                        <Text style={[styles.anchorText, { color: colors.primary }]}>{task.emotionalAnchor}</Text>
+                      </View>
+                    )}
 
                     {/* Steps */}
                     {task.steps.map(step => (
@@ -193,7 +237,10 @@ export default function WeeklyPlanner({ navigation }) {
           );
         })}
 
-        <View style={{ height: 32 }} />
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backFooterBtn}>
+          <Text style={[styles.backFooterText, { color: colors.textLight }]}>← Back to Home</Text>
+        </TouchableOpacity>
+        <View style={{ height: 16 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -201,18 +248,22 @@ export default function WeeklyPlanner({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
+  backFooterBtn:  { alignItems: 'center', paddingVertical: 14 },
+  backFooterText: { fontSize: 14, fontWeight: '600' },
   header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#EBEBEB' },
   title: { fontSize: 24, fontWeight: '800', color: colors.text },
   subtitle: { fontSize: 14, color: colors.textLight, marginTop: 2, marginBottom: 10 },
+  anchorCard:  { borderRadius: 10, borderWidth: 1, padding: 12, marginBottom: 10 },
+  anchorLabel: { fontSize: 11, fontWeight: '800', marginBottom: 4 },
+  anchorText:  { fontSize: 14, lineHeight: 20, fontStyle: 'italic' },
+
   goalCard: { backgroundColor: colors.primaryLight, borderRadius: 10, padding: 10, marginTop: 6, borderWidth: 1, borderColor: colors.primary + '40' },
   goalText: { fontSize: 13, color: colors.primary, fontWeight: '700' },
-  headerButtons: { flexDirection: 'row', gap: 8 },
-  calBtn: { borderWidth: 1.5, borderColor: '#E0E0E0', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
-  calBtnText: { fontSize: 13, color: colors.text, fontWeight: '700' },
-  reviewBtn: { borderWidth: 1.5, borderColor: colors.primary, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
-  reviewBtnText: { fontSize: 14, color: colors.primary, fontWeight: '700' },
-  addBtn: { backgroundColor: colors.primary, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8, flex: 1, alignItems: 'center' },
-  addBtnText: { fontSize: 14, color: '#fff', fontWeight: '700' },
+  headerButtons: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  iconBtn:       { flex: 1, alignItems: 'center', borderRadius: 12, borderWidth: 1.5, paddingVertical: 10, paddingHorizontal: 4, position: 'relative' },
+  dueDot:        { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#E53935' },
+  iconBtnEmoji:  { fontSize: 24, marginBottom: 4 },
+  iconBtnLabel:  { fontSize: 10, fontWeight: '700', textAlign: 'center' },
   content: { padding: 16 },
   emptyState: { alignItems: 'center', paddingVertical: 48 },
   emptyEmoji: { fontSize: 48, marginBottom: 16 },

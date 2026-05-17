@@ -332,7 +332,7 @@ function FocusGuide({ size }) {
 
   const n = NOTIFS[idx];
   return (
-    <View style={[styles.center, { width: size, height: size, overflow: 'hidden' }]}>
+    <View style={[styles.center, { width: size, height: size + 40, overflow: 'visible' }]}>
       <Animated.View style={[styles.notifCard, { backgroundColor: n?.color, width: size - 12, transform: [{ translateY: slideY }] }]}>
         <Text style={styles.notifIcon}>{n?.icon}</Text>
         <Text style={[styles.notifText, { flex: 1 }]} numberOfLines={1}>{n?.text}</Text>
@@ -376,7 +376,7 @@ export default function AnimatedGuide({ source, placeholder, label, width = 160,
 
   return (
     <View style={[styles.wrapper, style]}>
-      <View style={{ width, height, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width, height, overflow: 'visible', alignItems: 'center', justifyContent: 'center' }}>
         <GuideComponent size={Math.min(width, height)} />
       </View>
       {label && <Text style={styles.label}>{label}</Text>}

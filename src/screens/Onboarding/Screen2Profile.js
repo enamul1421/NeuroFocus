@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, TextInput, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { useStore } from '../../store';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
 
 const DIAGNOSES = [
   { id: 'adhd', label: 'ADHD / attention differences' },
@@ -11,10 +11,13 @@ const DIAGNOSES = [
   { id: 'other', label: 'Other / prefer not to say' },
 ];
 
-export default function Screen2Profile({ navigation }) {
+export default function Screen2Profile({
+  navigation }) {
+  const colors = useColors();
   const setOnboardingData = useStore(s => s.setOnboardingData);
-  const [nickname, setNickname] = useState('');
-  const [selected, setSelected] = useState([]);
+  const [nickname,     setNickname]     = useState('');
+  const [trustedAdult, setTrustedAdult] = useState('');
+  const [selected,     setSelected]     = useState([]);
 
   function toggle(id) {
     setSelected(prev =>
@@ -23,15 +26,15 @@ export default function Screen2Profile({ navigation }) {
   }
 
   function next() {
-    setOnboardingData({ userNickname: nickname, diagnoses: selected });
+    setOnboardingData({ userNickname: nickname, diagnoses: selected, trustedAdultName: trustedAdult.trim() });
     navigation.navigate('Screen3Challenges');
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.step}>Step 1 of 3</Text>
-        <Text style={styles.headline}>Your brain profile</Text>
+        <Text style={[styles.headline, { color: colors.text }]}>Your brain profile</Text>
         <Text style={styles.note}>This personalizes your modules. No judgment, no sharing.</Text>
 
         <Text style={styles.label}>What should we call you?</Text>
@@ -41,6 +44,22 @@ export default function Screen2Profile({ navigation }) {
           placeholderTextColor={colors.textLight}
           value={nickname}
           onChangeText={setNickname}
+          autoCapitalize="words"
+        />
+
+        <Text style={styles.label}>
+          Is there anyone who tends to listen?{' '}
+          <Text style={styles.labelSub}>(optional)</Text>
+        </Text>
+        <Text style={styles.labelHint}>
+          A person, a counselor, anyone — or leave blank. No pressure.
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Their name, if someone comes to mind..."
+          placeholderTextColor={colors.textLight}
+          value={trustedAdult}
+          onChangeText={setTrustedAdult}
           autoCapitalize="words"
         />
 
@@ -79,7 +98,8 @@ const styles = StyleSheet.create({
   headline: { fontSize: 30, fontWeight: '800', color: colors.text, marginBottom: 8 },
   note: { fontSize: 15, color: colors.textLight, marginBottom: 24 },
   label: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 10, marginTop: 8 },
-  labelSub: { fontWeight: '400', color: colors.textLight },
+  labelSub:  { fontWeight: '400', color: colors.textLight },
+  labelHint: { fontSize: 13, color: colors.textLight, marginBottom: 10, marginTop: -6 },
   input: {
     borderWidth: 1.5,
     borderColor: '#DDD',

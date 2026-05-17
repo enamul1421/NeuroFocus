@@ -1,10 +1,11 @@
 import React from 'react';
-import {
-  View, Text, StyleSheet, SafeAreaView, ScrollView, Dimensions,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity,
 } from 'react-native';
 import { LineChart, BarChart } from 'react-native-chart-kit';
 import { useStore } from '../../store';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
+import { BADGES, levelInfo } from '../../utils/achievements';
 
 const W = Dimensions.get('window').width;
 const CHART_W = W - 48;
@@ -67,6 +68,27 @@ function weeklyData(sessions, valueField, aggregator = 'avg', nWeeks = 8) {
   };
 }
 
+// ── Daily anger aggregation (last 7 days) ─────────────────────────────────────
+function dailyAngerData(checkIns) {
+  const result = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const dayCheckins = checkIns.filter(c => c.timestamp && c.timestamp.startsWith(dateStr));
+    const avg = dayCheckins.length
+      ? Math.round((dayCheckins.reduce((s, c) => s + c.rating, 0) / dayCheckins.length) * 10) / 10
+      : 0;
+    const label = d.toLocaleDateString('en-US', { weekday: 'short' });
+    result.push({ label, value: avg, count: dayCheckins.length });
+  }
+  return {
+    labels: result.map(r => r.label),
+    data:   result.map(r => r.value),
+    counts: result.map(r => r.count),
+  };
+}
+
 // ── Chart helpers ─────────────────────────────────────────────────────────────
 
 function NoData({ msg = 'Complete sessions to see weekly trends' }) {
@@ -79,7 +101,7 @@ function NoData({ msg = 'Complete sessions to see weekly trends' }) {
 
 function ChartCard({ title, children }) {
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface }]}>
       <Text style={styles.cardTitle}>{title}</Text>
       {children}
     </View>
@@ -88,12 +110,15 @@ function ChartCard({ title, children }) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function Progress({ navigation }) {
+export default function Progress({
+  navigation }) {
+  const colors = useColors();
   const {
     timeWiseSessions, timeWiseLevel, weeklyCheckIns, weeklyWins,
     totalSessions, currentStreak, focusControlSessions,
     memoryBankSessions, moodBridgeSessions, morningLogs,
-    weeklyReviews, plannerTasks,
+    plannerTasks, xp, unlockedBadges, baselineAssessments,
+    angerCheckIns, coolDownLogs,
   } = useStore(s => ({
     timeWiseSessions:    s.timeWiseSessions    || [],
     timeWiseLevel:       s.timeWiseLevel       || 1,
@@ -105,9 +130,18 @@ export default function Progress({ navigation }) {
     memoryBankSessions:  s.memoryBankSessions  || [],
     moodBridgeSessions:  s.moodBridgeSessions  || [],
     morningLogs:         s.morningLogs         || [],
-    weeklyReviews:       s.weeklyReviews       || [],
     plannerTasks:        s.plannerTasks        || [],
+    xp:                  s.xp                 || 0,
+    unlockedBadges:      s.unlockedBadges      || [],
+    baselineAssessments: s.baselineAssessments || [],
+    angerCheckIns:       s.angerCheckIns       || [],
+    coolDownLogs:        s.coolDownLogs        || [],
   }));
+
+  const lvl = levelInfo(xp);
+  const allBadges = Object.values(BADGES);
+  const hasWeek0 = baselineAssessments.some(a => a.week === 0);
+  const nextWeek  = hasWeek0 ? (baselineAssessments.some(a => a.week === 6) ? (baselineAssessments.some(a => a.week === 12) ? null : 12) : 6) : 0;
 
   // ── TimeWise ──────────────────────────────────────────────────────────────
   const twWeekly = weeklyData(timeWiseSessions, 'avgCoeff', 'avg');
@@ -148,6 +182,24 @@ export default function Progress({ navigation }) {
     ]}],
   };
 
+  // ── Anger self-monitoring ─────────────────────────────────────────────────
+  const angerDaily = dailyAngerData(angerCheckIns);
+  const hasAngerData = angerDaily.data.some(v => v > 0);
+  const recentAvg = angerDaily.data.slice(-3).filter(v => v > 0);
+  const recentMean = recentAvg.length ? recentAvg.reduce((a, b) => a + b, 0) / recentAvg.length : 0;
+  const coolDownsThisWeek = coolDownLogs.filter(l => {
+    const d = new Date(l.timestamp || 0);
+    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+    return d >= weekAgo;
+  }).length;
+  const angerInsight = recentMean >= 8
+    ? `High tension this week (avg ${recentMean.toFixed(1)}). CoolDown has your back.`
+    : recentMean >= 6
+    ? `Some tension detected (avg ${recentMean.toFixed(1)}). Monitoring is working.`
+    : recentMean > 0
+    ? `Staying regulated this week (avg ${recentMean.toFixed(1)}). Great work.`
+    : null;
+
   // ── Win categories ────────────────────────────────────────────────────────
   const winCats = ['academic', 'social', 'challenge', 'adhd', 'creative', 'helped'];
   const winCatLabels = ['Study', 'Social', 'Challenge', 'ADHD', 'Creative', 'Helped'];
@@ -162,9 +214,56 @@ export default function Progress({ navigation }) {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.headline}>Progress</Text>
+        <Text style={[styles.headline, { color: colors.text }]}>Progress</Text>
+
+        {/* ── Assessment banner ── */}
+        {nextWeek !== null && (
+          <TouchableOpacity
+            style={styles.assessBanner}
+            onPress={() => navigation.navigate('BaselineAssessment', { week: nextWeek })}
+          >
+            <Text style={styles.assessIcon}>📋</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.assessTitle}>Week {nextWeek} Assessment due</Text>
+              <Text style={styles.assessSub}>11 questions · ~5 min · measures your EF growth</Text>
+            </View>
+            <Text style={styles.assessArrow}>→</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* ── Level & XP ── */}
+        <View style={styles.levelCard}>
+          <View style={styles.levelHeader}>
+            <View style={styles.levelBadge}>
+              <Text style={styles.levelNum}>{lvl.level}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.levelName}>{lvl.name}</Text>
+              <Text style={styles.xpText}>{xp} XP{lvl.xpToNext > 0 ? ` · ${lvl.xpToNext} to next level` : ' · MAX LEVEL'}</Text>
+            </View>
+          </View>
+          <View style={styles.xpBarBg}>
+            <View style={[styles.xpBarFill, { width: `${Math.round(lvl.progress * 100)}%` }]} />
+          </View>
+        </View>
+
+        {/* ── Badges ── */}
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          <Text style={styles.cardTitle}>Badges — {unlockedBadges.length}/{allBadges.length}</Text>
+          <View style={styles.badgeGrid}>
+            {allBadges.map(b => {
+              const unlocked = unlockedBadges.includes(b.id);
+              return (
+                <View key={b.id} style={[styles.badgeTile, !unlocked && styles.badgeTileLocked]}>
+                  <Text style={[styles.badgeTileIcon, !unlocked && styles.badgeTileIconLocked]}>{b.icon}</Text>
+                  <Text style={[styles.badgeTileName, !unlocked && styles.badgeTileNameLocked]} numberOfLines={2}>{b.name}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
 
         {/* Overview stats */}
         <View style={styles.statsRow}>
@@ -273,6 +372,47 @@ export default function Progress({ navigation }) {
           )}
         </ChartCard>
 
+        {/* ── Anger self-monitoring ── */}
+        <ChartCard title="😤 Anger Levels — Last 7 Days">
+          <Text style={styles.cardSubtitle}>Daily avg · 0 = calm · 10 = explosive · tap CoolDown at 6+</Text>
+          {!hasAngerData ? (
+            <NoData msg="Check in daily on the Home screen to see your anger trend" />
+          ) : (
+            <>
+              <BarChart
+                data={{ labels: angerDaily.labels, datasets: [{ data: angerDaily.data }] }}
+                width={CHART_W} height={CHART_H}
+                chartConfig={{
+                  ...BAR_CFG,
+                  color: (op = 1) => `rgba(244, 67, 54, ${op})`,
+                  decimalPlaces: 1,
+                }}
+                style={styles.chart}
+                fromZero
+                showValuesOnTopOfBars
+                withInnerLines={false}
+              />
+              <View style={styles.angerRow}>
+                <View style={[styles.angerThreshLine, { flex: 1 }]}>
+                  <View style={styles.angerThreshDash} />
+                  <Text style={styles.angerThreshLabel}>6 = CoolDown threshold</Text>
+                </View>
+                {coolDownsThisWeek > 0 && (
+                  <View style={styles.coolDownBadge}>
+                    <Text style={styles.coolDownBadgeText}>🆘 {coolDownsThisWeek}× this week</Text>
+                  </View>
+                )}
+              </View>
+              {angerInsight && (
+                <Text style={[
+                  styles.angerInsight,
+                  { color: recentMean >= 6 ? '#B71C1C' : '#388E3C' },
+                ]}>{angerInsight}</Text>
+              )}
+            </>
+          )}
+        </ChartCard>
+
         {/* ── Morning Routine ── */}
         {morningWeekly.data.length >= 1 && (
           <ChartCard title="☀️ Daily Routine Completion % (weekly)">
@@ -375,4 +515,38 @@ const styles = StyleSheet.create({
 
   noData:     { paddingVertical: 28, alignItems: 'center' },
   noDataText: { fontSize: 13, color: colors.textLight, fontStyle: 'italic' },
+
+  assessBanner:  { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.primaryLight, borderRadius: 14, borderWidth: 1.5, borderColor: colors.primary, padding: 14, marginBottom: 16 },
+  assessIcon:    { fontSize: 24 },
+  assessTitle:   { fontSize: 14, fontWeight: '800', color: colors.primary },
+  assessSub:     { fontSize: 12, color: colors.primary, opacity: 0.8, marginTop: 2 },
+  assessArrow:   { fontSize: 18, color: colors.primary, fontWeight: '700' },
+
+  // Level card
+  levelCard:   { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#EBEBEB' },
+  levelHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 12 },
+  levelBadge:  { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  levelNum:    { fontSize: 24, fontWeight: '900', color: '#fff' },
+  levelName:   { fontSize: 16, fontWeight: '800', color: colors.text },
+  xpText:      { fontSize: 12, color: colors.textLight, marginTop: 2 },
+  xpBarBg:     { height: 8, backgroundColor: '#F0F0F0', borderRadius: 4 },
+  xpBarFill:   { height: 8, backgroundColor: colors.primary, borderRadius: 4 },
+
+  // Anger chart
+  angerRow:          { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
+  angerThreshLine:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  angerThreshDash:   { width: 24, height: 1, borderWidth: 1, borderStyle: 'dashed', borderColor: '#FF9800' },
+  angerThreshLabel:  { fontSize: 11, color: '#FF9800', fontWeight: '600' },
+  coolDownBadge:     { backgroundColor: '#FFCDD2', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
+  coolDownBadgeText: { fontSize: 11, color: '#B71C1C', fontWeight: '700' },
+  angerInsight:      { fontSize: 12, fontWeight: '600', marginTop: 8 },
+
+  // Badge gallery
+  badgeGrid:          { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8 },
+  badgeTile:          { width: 72, alignItems: 'center', padding: 8, backgroundColor: '#F8F8FF', borderRadius: 12, borderWidth: 1.5, borderColor: colors.primary + '40' },
+  badgeTileLocked:    { backgroundColor: '#F5F5F5', borderColor: '#E0E0E0' },
+  badgeTileIcon:      { fontSize: 26, marginBottom: 4 },
+  badgeTileIconLocked:{ opacity: 0.25 },
+  badgeTileName:      { fontSize: 10, fontWeight: '700', color: colors.primary, textAlign: 'center' },
+  badgeTileNameLocked:{ color: '#BDBDBD' },
 });

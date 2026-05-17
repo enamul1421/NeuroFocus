@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+import { SafeAreaView } from 'react-native-safe-area-context';import {
+  View, Text, StyleSheet, TouchableOpacity,
   ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useStore } from '../../store';
-import { colors } from '../../theme';
+import { colors, useColors } from '../../theme';
 import { scheduleStepNotification, suggestStepDates } from './utils';
 import * as Notifications from 'expo-notifications';
 
@@ -58,7 +58,9 @@ function makeSession(scheduledDate, durationMin) {
   return { id: `sess_${Date.now()}_${Math.random()}`, scheduledDate, durationMin, notificationId: null };
 }
 
-export default function AddTask({ navigation }) {
+export default function AddTask({
+  navigation }) {
+  const colors = useColors();
   const { addPlannerTask, plannerTasks } = useStore(s => ({
     addPlannerTask: s.addPlannerTask,
     plannerTasks: s.plannerTasks || [],
@@ -66,7 +68,8 @@ export default function AddTask({ navigation }) {
 
   const [screen, setScreen] = useState(SCREEN.TYPE);
   const [selectedType, setSelectedType] = useState(null);
-  const [taskTitle, setTaskTitle] = useState('');
+  const [taskTitle,       setTaskTitle]       = useState('');
+  const [emotionalAnchor, setEmotionalAnchor] = useState('');
   const [deadline, setDeadline] = useState(() => {
     const d = new Date(); d.setDate(d.getDate() + 7); return d;
   });
@@ -270,13 +273,14 @@ export default function AddTask({ navigation }) {
       }));
       addPlannerTask({
         id: `task_${Date.now()}`,
-        title: taskTitle.trim(),
-        type: selectedType,
-        deadline: deadline.toISOString(),
-        addedDate: new Date().toISOString(),
-        steps: stepsWithNotifs,
-        weeklyGrade: null,
-        status: 'active',
+        title:          taskTitle.trim(),
+        type:           selectedType,
+        deadline:       deadline.toISOString(),
+        addedDate:      new Date().toISOString(),
+        steps:          stepsWithNotifs,
+        emotionalAnchor:emotionalAnchor.trim(),
+        weeklyGrade:    null,
+        status:         'active',
       });
       navigation.goBack();
     } catch (e) {
@@ -291,13 +295,13 @@ export default function AddTask({ navigation }) {
   // ── TYPE PICKER ──────────────────────────────────────────────────────────
   if (screen === SCREEN.TYPE) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Text style={styles.backBtnText}>← Cancel</Text>
           </TouchableOpacity>
-          <Text style={styles.headline}>What type of task?</Text>
-          <Text style={styles.body}>Pick the closest match to get the right step sequence.</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>What type of task?</Text>
+          <Text style={[styles.body, { color: colors.text }]}>Pick the closest match to get the right step sequence.</Text>
           {TEMPLATE_GROUPS.map(group => (
             <View key={group.label} style={styles.groupBlock}>
               <Text style={styles.groupLabel}>{group.label}</Text>
@@ -323,13 +327,13 @@ export default function AddTask({ navigation }) {
   if (screen === SCREEN.TITLE) {
     return (
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
           <ScrollView contentContainerStyle={styles.content}>
             <TouchableOpacity onPress={() => setScreen(SCREEN.TYPE)} style={styles.backBtn}>
               <Text style={styles.backBtnText}>← Back</Text>
             </TouchableOpacity>
             <Text style={styles.stepTag}>{template.icon} {template.label}</Text>
-            <Text style={styles.headline}>Name this task</Text>
+            <Text style={[styles.headline, { color: colors.text }]}>Name this task</Text>
 
             <Text style={styles.label}>Task name</Text>
             <TextInput
@@ -395,6 +399,19 @@ export default function AddTask({ navigation }) {
                 </View>
               ))}
             </View>
+
+            <Text style={styles.label}>
+              When we finish this, what changes for us?{' '}
+              <Text style={{ fontWeight: '400', color: colors.textLight }}>(optional)</Text>
+            </Text>
+            <TextInput
+              style={[styles.textInput, { minHeight: 64, textAlignVertical: 'top' }]}
+              placeholder="Why does completing this matter to us..."
+              placeholderTextColor={colors.textLight}
+              value={emotionalAnchor}
+              onChangeText={setEmotionalAnchor}
+              multiline
+            />
           </ScrollView>
 
           <TouchableOpacity
@@ -419,7 +436,7 @@ export default function AddTask({ navigation }) {
     const minDate = prevStep ? new Date(prevStep.sessions[0].scheduledDate) : new Date();
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
 
           <View style={styles.taskHeaderRow}>
@@ -459,7 +476,7 @@ export default function AddTask({ navigation }) {
           )}
 
           {/* Current step — editable name + total duration */}
-          <Text style={styles.headline}>When will you do this?</Text>
+          <Text style={[styles.headline, { color: colors.text }]}>When will you do this?</Text>
           <View style={styles.stepPreviewCard}>
             <TextInput
               style={styles.stepNameInput}

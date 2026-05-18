@@ -13,14 +13,21 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.westview.neurofocus"
+      "bundleIdentifier": "com.westview.neurofocus",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#5B5EA6"
       },
-      "package": "com.westview.neurofocus"
+      "package": "com.westview.neurofocus",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "plugins": [
       [
@@ -32,6 +39,12 @@
       ],
       "@react-native-community/datetimepicker",
       "expo-audio"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "12821e45-a49b-44f2-92a5-e319c53af11a"
+      }
+    },
+    "owner": "enamul1421"
   }
 }

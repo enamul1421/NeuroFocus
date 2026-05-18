@@ -7,6 +7,7 @@ import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const PHASE = {
   SCENARIO: 'scenario',
@@ -251,10 +252,11 @@ export default function ConnectWell({ navigation }) {
   if (phase === PHASE.SCENARIO) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🤝" onBack={() => navigation.goBack()} tintColor={ACCENT} />
         <SessionProgress current={0} total={4} color={ACCENT} />
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.phaseTag, { color: ACCENT }]}>SCENARIO</Text>
-          <SpeakButton text="Read the situation below. Think about how the other person might have been feeling, then choose how to respond. Each scenario trains real social awareness." style={{ marginBottom: 8 }} />
+          <SpeakButton text="Social patterns are learnable — brain imaging shows that practicing social scenarios builds the same neural pathways as real conversations. Each scenario takes about 3 minutes and trains perspective-taking and response skills. Not pretending. Actual brain training. Let us get sharper." style={{ marginBottom: 8 }} />
 
           <View style={[styles.scenarioCard, { backgroundColor: ACCENT_LIGHT, borderColor: ACCENT + '50' }]}>
             <Text style={styles.scenarioText}>{scenario.situation}</Text>
@@ -295,6 +297,9 @@ export default function ConnectWell({ navigation }) {
             onPress={perspectiveType ? () => setPhase(PHASE.RESPOND) : null}
           >
             <Text style={styles.nextBtnText}>How do we respond? →</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backLink}>
+            <Text style={styles.backLinkText}>← Back</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -510,6 +515,8 @@ const styles = StyleSheet.create({
   nudgeText: { fontSize: 13, color: '#795548', fontStyle: 'italic' },
 
   nextBtn:     { borderRadius: 14, padding: 18, alignItems: 'center', marginTop: 4 },
+  backLink:    { alignItems: 'center', paddingVertical: 10, marginTop: 4 },
+  backLinkText:{ fontSize: 15, color: ACCENT, fontWeight: '600' },
   nextBtnText: { color: '#fff', fontSize: 17, fontWeight: '800' },
 
   outcomeCard:  { borderRadius: 16, borderWidth: 1.5, padding: 18, marginBottom: 20, flexDirection: 'row', gap: 12, alignItems: 'flex-start' },

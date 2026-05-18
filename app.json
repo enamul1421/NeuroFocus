@@ -23,11 +23,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#5B5EA6"
       },
-      "package": "com.westview.neurofocus",
-      "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
-      ]
+      "package": "com.westview.neurofocus"
     },
     "plugins": [
       [
@@ -37,8 +33,7 @@
           "color": "#5B5EA6"
         }
       ],
-      "@react-native-community/datetimepicker",
-      "expo-audio"
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "eas": {

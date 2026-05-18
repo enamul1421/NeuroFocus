@@ -117,11 +117,11 @@ export default function App() {
             <>
               <Stack.Screen name="Home" component={Home} />
               <Stack.Screen name="WeeklyCheckIn" component={WeeklyCheckIn} options={moduleHeader} />
-              <Stack.Screen name="TimeWise" component={TimeWise} options={moduleHeader} />
-              <Stack.Screen name="FocusControlPlaceholder" component={FocusControl} options={moduleHeader} />
-              <Stack.Screen name="MoodBridgePlaceholder" component={MoodBridge} options={moduleHeader} />
-              <Stack.Screen name="ConfidenceCorePlaceholder" component={ConfidenceCore} options={moduleHeader} />
-              <Stack.Screen name="MemoryBankPlaceholder" component={MemoryBank} options={moduleHeader} />
+              <Stack.Screen name="TimeWise" component={TimeWise} />
+              <Stack.Screen name="FocusControlPlaceholder" component={FocusControl} />
+              <Stack.Screen name="MoodBridgePlaceholder" component={MoodBridge} />
+              <Stack.Screen name="ConfidenceCorePlaceholder" component={ConfidenceCore} />
+              <Stack.Screen name="MemoryBankPlaceholder" component={MemoryBank} />
               <Stack.Screen name="WeeklyPlanner" component={WeeklyPlanner} options={moduleHeader} />
               <Stack.Screen name="AddTask" component={AddTask} options={moduleHeader} />
               <Stack.Screen name="WeeklyReview" component={WeeklyReview} options={moduleHeader} />
@@ -132,22 +132,22 @@ export default function App() {
               <Stack.Screen name="NotificationSettings" component={NotificationSettings} options={moduleHeader} />
               <Stack.Screen name="BaselineAssessment" component={BaselineAssessment} options={moduleHeader} />
               <Stack.Screen name="ResearcherDashboard" component={ResearcherDashboard} options={moduleHeader} />
-              <Stack.Screen name="SleepGuard" component={SleepGuard} options={{ headerShown: false }} />
-              <Stack.Screen name="CoolDown" component={CoolDown} options={{ headerShown: false }} />
-              <Stack.Screen name="ConnectWell" component={ConnectWell} options={moduleHeader} />
-              <Stack.Screen name="TrueNorth" component={TrueNorth} options={moduleHeader} />
-              <Stack.Screen name="GlassBreak" component={GlassBreak} options={{ headerShown: false }} />
+              <Stack.Screen name="SleepGuard" component={SleepGuard} />
+              <Stack.Screen name="CoolDown" component={CoolDown} />
+              <Stack.Screen name="ConnectWell" component={ConnectWell} />
+              <Stack.Screen name="TrueNorth" component={TrueNorth} />
+              <Stack.Screen name="GlassBreak" component={GlassBreak} />
               <Stack.Screen name="TransitionTimer" component={TransitionTimer} options={moduleHeader} />
-              <Stack.Screen name="StillPoint" component={StillPoint} options={moduleHeader} />
-              <Stack.Screen name="QuietMode" component={QuietMode} options={{ headerShown: false }} />
-              <Stack.Screen name="FocusWatch" component={FocusWatch} options={moduleHeader} />
+              <Stack.Screen name="StillPoint" component={StillPoint} />
+              <Stack.Screen name="QuietMode" component={QuietMode} />
+              <Stack.Screen name="FocusWatch" component={FocusWatch} />
               <Stack.Screen name="OwnershipReflect" component={OwnershipReflect} options={moduleHeader} />
-              <Stack.Screen name="ThoughtCheck" component={ThoughtCheck} options={moduleHeader} />
-              <Stack.Screen name="HardMoment" component={HardMoment} options={moduleHeader} />
-              <Stack.Screen name="WorryBreak" component={WorryBreak} options={moduleHeader} />
-              <Stack.Screen name="SensoryShield" component={SensoryShield} options={moduleHeader} />
-              <Stack.Screen name="SpeakUp" component={SpeakUp} options={moduleHeader} />
-              <Stack.Screen name="FlexSwitch" component={FlexSwitch} options={moduleHeader} />
+              <Stack.Screen name="ThoughtCheck" component={ThoughtCheck} />
+              <Stack.Screen name="HardMoment" component={HardMoment} />
+              <Stack.Screen name="WorryBreak" component={WorryBreak} />
+              <Stack.Screen name="SensoryShield" component={SensoryShield} />
+              <Stack.Screen name="SpeakUp" component={SpeakUp} />
+              <Stack.Screen name="FlexSwitch" component={FlexSwitch} />
             </>
           )}
         </Stack.Navigator>

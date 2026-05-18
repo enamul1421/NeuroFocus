@@ -422,15 +422,15 @@ export default function Home({
 
       {/* Footer — pinned to screen bottom */}
       <View style={[styles.footerRow, { backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: colors.border }]}>
-        <TouchableOpacity style={styles.footerBtn} onPress={() => navigation.navigate('Progress')}>
+        <TouchableOpacity style={[styles.footerBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => navigation.navigate('Progress')}>
           <Text style={styles.footerIcon}>📈</Text>
           <Text style={[styles.footerLabel, { color: colors.text }]}>Progress</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerBtn} onPress={() => navigation.navigate('TransitionTimer')}>
+        <TouchableOpacity style={[styles.footerBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => navigation.navigate('TransitionTimer')}>
           <Text style={styles.footerIcon}>⏱</Text>
           <Text style={[styles.footerLabel, { color: colors.text }]}>Timer</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerBtn} onPress={() => navigation.navigate('NotificationSettings')}>
+        <TouchableOpacity style={[styles.footerBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => navigation.navigate('NotificationSettings')}>
           <Text style={styles.footerIcon}>🔔</Text>
           <Text style={[styles.footerLabel, { color: colors.text }]}>Settings</Text>
         </TouchableOpacity>
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
 
   footerRow:  { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
   crisisFooterBtn: { borderColor: '#9FA8DA', backgroundColor: '#E8EAF6' },
-  footerBtn:  { flex: 1, backgroundColor: '#fff', borderRadius: 10, borderWidth: 1, borderColor: '#EBEBEB', paddingVertical: 6, paddingHorizontal: 4, alignItems: 'center' },
+  footerBtn:  { flex: 1, borderRadius: 10, borderWidth: 1, paddingVertical: 6, paddingHorizontal: 4, alignItems: 'center' },
   footerIcon: { fontSize: 16, marginBottom: 2 },
   footerLabel:{ fontSize: 10, fontWeight: '700', color: '#1A1A2E' },
 });

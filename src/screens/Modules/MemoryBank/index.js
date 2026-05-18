@@ -6,6 +6,7 @@ import { useStore } from '../../../store';
 import { colors, useColors } from '../../../theme';
 import { logSession } from '../../../services/logger';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 import AnimatedGuide from '../../../components/AnimatedGuide';
 import SessionProgress from '../../../components/SessionProgress';
 
@@ -210,12 +211,11 @@ export default function MemoryBank({
   if (phase === PHASE.INTRO) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🧠" onBack={() => navigation.goBack()} />
         <ScrollView contentContainerStyle={styles.content}>
-
-
           <Text style={[styles.moduleTag, { color: colors.text }]}>🧠 MemoryBank</Text>
           <Text style={[styles.headline, { color: colors.text }]}>Train your working memory</Text>
-          <SpeakButton text="Our brains are incredible at making connections and spotting patterns — and we can absolutely train our working memory to get even stronger. In this exercise, we see a sequence, hold it in our mind, and recall it. Every round builds real mental muscle. Scientists have shown that working memory training improves focus, planning, and learning. Session by session, we level up and our brain adapts to handle more. We are not forgetful — we are training. Let's go." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+          <SpeakButton text="Working memory — holding information in mind while using it — is a common challenge but it is directly trainable. Research shows digit-span practice improves working memory capacity in 3 to 4 weeks. Sequences, forward and backward, about 6 minutes. Every round builds real mental muscle." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
           <AnimatedGuide placeholder="memory" label="See · Remember · Recall" width={110} height={110} />
           <Text style={[styles.body, { color: colors.text }]}>See a sequence · remember · recall.</Text>
 
@@ -243,6 +243,9 @@ export default function MemoryBank({
           <View style={styles.infoCard}>
             <Text style={styles.infoItem}>⏱ ~6 min · 15 rounds · 🎯 Target: level 6</Text>
           </View>
+          <TouchableOpacity style={styles.backLink} onPress={() => navigation.goBack()}>
+            <Text style={styles.backLinkText}>← Back</Text>
+          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     );
@@ -505,7 +508,9 @@ const styles = StyleSheet.create({
   modeLevelNum:   { fontSize: 20, fontWeight: '900', color: '#fff' },
   modeLevelLabel: { fontSize: 9, color: '#fff', opacity: 0.8, fontWeight: '600' },
 
-  infoCard: { backgroundColor: '#F5F5F5', borderRadius: 12, padding: 12, marginTop: 4 },
+  infoCard:     { backgroundColor: '#F5F5F5', borderRadius: 12, padding: 12, marginTop: 4 },
+  backLink:     { alignItems: 'center', paddingVertical: 10, marginTop: 8, marginBottom: 8 },
+  backLinkText: { fontSize: 15, color: colors.primary, fontWeight: '600' },
   infoItem: { fontSize: 13, color: colors.textLight },
 
   // Playing

@@ -9,6 +9,7 @@ import { colors, useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
 import SpeakButton from '../../../components/SpeakButton';
 import TimerRing from '../../../components/TimerRing';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const PHASE = {
   SOS:         'sos',
@@ -157,21 +158,21 @@ export default function CoolDown({ navigation }) {
   // ── SOS ────────────────────────────────────────────────────────────────────
   if (phase === PHASE.SOS) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: '#1A0000' }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🆘" onBack={() => navigation.goBack()} />
         <SessionProgress current={0} total={5} color="#E53935" />
         <View style={styles.center}>
-          <Text style={styles.bigEmoji}>🆘</Text>
-          <Text style={styles.sosTitle}>We need to cool down.</Text>
-          <Text style={styles.sosSub}>Our brain is flooded right now. That is okay. Let us do one thing to reset it.</Text>
-          <SpeakButton text="Our brain is flooded right now. That is okay. It happens. We are not bad — we are overwhelmed. Let us do one thing to reset it, step by step." style={{ marginBottom: 12 }} />
+          <Text style={[styles.sosTitle, { color: colors.text }]}>We need to cool down.</Text>
+          <Text style={[styles.sosSub, { color: colors.textLight }]}>Our brain is flooded right now. That is okay. Let us do one thing to reset it.</Text>
+          <SpeakButton text="When emotion spikes past a threshold, the thinking brain goes offline — that is limbic flooding, and it is neurological. CoolDown uses proven STOP-skill techniques to bring the brain back online step by step. About 8 minutes total. We are not broken — our brain is just catching up." style={{ marginBottom: 12 }} />
 
-          <Text style={styles.angerLabel}>How angry are we right now?</Text>
+          <Text style={[styles.angerLabel, { color: colors.text }]}>How angry are we right now?</Text>
           <View style={styles.angerRow}>
             {[1,2,3,4,5,6,7,8,9,10].map(n => (
               <TouchableOpacity
                 key={n}
                 style={[styles.angerBtn, angerBefore === n && styles.angerBtnActive,
-                  { backgroundColor: angerBefore === n ? angerColor(n) : '#2A0000' }]}
+                  { backgroundColor: angerBefore === n ? angerColor(n) : colors.surface, borderWidth: 1, borderColor: colors.border }]}
                 onPress={() => setAngerBefore(n)}
               >
                 <Text style={styles.angerNum}>{n}</Text>
@@ -559,7 +560,7 @@ const styles = StyleSheet.create({
   angerNum:    { fontSize: 13, fontWeight: '800', color: '#fff' },
   angerHint:   { fontSize: 11, color: '#888', marginBottom: 32 },
   sosBackBtn:  { marginTop: 16, padding: 10, alignItems: 'center' },
-  sosBackText: { color: '#FFAAAA', fontSize: 13 },
+  sosBackText: { color: '#888', fontSize: 13 },
   sosBtn:      { backgroundColor: '#E53935', borderRadius: 16, paddingHorizontal: 32, paddingVertical: 18, width: '100%', alignItems: 'center' },
   sosBtnOff:   { backgroundColor: '#444' },
   sosBtnText:  { color: '#fff', fontSize: 18, fontWeight: '900' },

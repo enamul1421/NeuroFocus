@@ -7,6 +7,7 @@ import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const PHASE = { CATCH: 'catch', CHECK: 'check', REFRAME: 'reframe', DONE: 'done' };
 const ACCENT       = '#37474F';
@@ -62,14 +63,15 @@ export default function ThoughtCheck({ navigation }) {
   if (phase === PHASE.CATCH) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🧠" onBack={() => navigation.goBack()} tintColor={ACCENT} />
         <SessionProgress current={0} total={3} color={ACCENT} />
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.heroEmoji}>🧠</Text>
+          
           <Text style={[styles.title, { color: colors.text }]}>Catch the thought.</Text>
           <Text style={[styles.sub, { color: colors.textLight }]}>
             We cannot challenge a thought we have not named. Pick the one closest to what is in our head.
           </Text>
-          <SpeakButton text="We cannot challenge a thought we have not named. Pick the one closest to what is in our head right now. Naming it is already the first step to changing it." style={{ marginBottom: 12 }} />
+          <SpeakButton text="Our thoughts are predictions our brain makes — usually when it is scared or tired, not when it is thinking clearly. CBT research shows that naming and questioning a negative thought even once reduces its power within minutes. Three questions, about 5 minutes. We are not doing positive thinking — we are asking what is actually true." style={{ marginBottom: 12 }} />
 
           <View style={styles.typeList}>
             {THOUGHT_TYPES.map(t => (

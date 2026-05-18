@@ -7,6 +7,7 @@ import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const PHASE = {
   MODE:    'mode',    // avoid vs seek
@@ -127,13 +128,13 @@ export default function SensoryShield({ navigation }) {
   if (phase === PHASE.MODE) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🛡️" onBack={() => navigation.goBack()} tintColor={ACCENT} />
         <View style={styles.center}>
-          <Text style={styles.heroEmoji}>🛡️</Text>
           <Text style={[styles.title, { color: colors.text }]}>SensoryShield</Text>
           <Text style={[styles.sub, { color: colors.textLight }]}>
             What is our sensory experience right now?
           </Text>
-          <SpeakButton text="What is our sensory experience right now? Our senses can get overwhelmed or under-stimulated. Both are valid. This module helps us figure out what is happening and what to do about it." style={{ marginBottom: 12 }} />
+          <SpeakButton text="Many teens experience sensory sensitivities — our nervous system is extra sensitive, not broken. Identifying what is happening and picking one tool can shift the feeling in under 2 minutes. We figure out if we need less input or more, then act on it. We know our system best." style={{ marginBottom: 12 }} />
 
           <TouchableOpacity
             style={[styles.modeCard, { backgroundColor: '#F3E5F5', borderColor: ACCENT + '60' }]}

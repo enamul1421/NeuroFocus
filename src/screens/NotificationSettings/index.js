@@ -104,9 +104,6 @@ export default function NotificationSettings({
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>← Back</Text>
-        </TouchableOpacity>
         <Text style={[styles.headline, { color: colors.text }]}>Settings</Text>
         <SpeakButton text="Settings lets us control how NeuroFocus works for us — dark mode, notifications for each module, medication reminders, and more. We can set it up once and it runs in the background to support us." style={{ marginBottom: 12 }} />
 
@@ -251,6 +248,9 @@ export default function NotificationSettings({
             💡 Times designed for after-school use (4–6 PM). Tap any time to adjust for your schedule.
           </Text>
         </View>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
+          <Text style={styles.backText}>← Back</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -259,7 +259,7 @@ export default function NotificationSettings({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9F9F9' },
   content:   { padding: 24, paddingBottom: 40 },
-  back:      { marginBottom: 16 },
+  back:      { marginTop: 16, marginBottom: 8, alignItems: 'center' },
   backText:  { fontSize: 15, color: colors.primary, fontWeight: '600' },
   headline:   { fontSize: 26, fontWeight: '800', marginBottom: 16 },
   sectionHead:{ fontSize: 11, fontWeight: '800', letterSpacing: 1, marginBottom: 8, marginTop: 4 },

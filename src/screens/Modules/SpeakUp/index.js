@@ -5,6 +5,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useColors } from '../../../theme';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const ACCENT       = '#1565C0';
 const ACCENT_LIGHT = '#E3F2FD';
@@ -92,13 +93,13 @@ export default function SpeakUp({ navigation }) {
   if (!selected) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🎤" onBack={() => navigation.goBack()} tintColor={ACCENT} />
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.heroEmoji}>🎤</Text>
           <Text style={[styles.title, { color: colors.text }]}>SpeakUp</Text>
           <Text style={[styles.sub, { color: colors.textLight }]}>
             Exact words for situations that feel hard to navigate. Pick one.
           </Text>
-          <SpeakButton text="Exact words for situations that feel hard to navigate. Pick one. These scripts are not about being perfect — they are about having something real to say when our brain goes blank." style={{ marginBottom: 12 }} />
+          <SpeakButton text="Research on scripted rehearsal shows it activates the same neural circuits as real conversations — so practicing the words literally wires the brain to use them. Studies on self-advocacy training show higher confidence and better outcomes in high-stakes situations. Pick one script. Read it out loud or in our head. About 2 minutes. We are building the pattern our brain will reach for when the moment comes." style={{ marginBottom: 12 }} />
 
           {SCRIPTS.map(s => (
             <TouchableOpacity

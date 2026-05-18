@@ -7,6 +7,7 @@ import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 // FlexSwitch: Stroop + task-switch hybrid.
 // A word is shown in a color. Current RULE tells whether to tap the WORD or the INK COLOR.
@@ -134,13 +135,13 @@ export default function FlexSwitch({ navigation }) {
   if (phase === PHASE.INTRO) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🔀" onBack={() => navigation.goBack()} tintColor={ACCENT} />
         <View style={styles.center}>
-          <Text style={styles.heroEmoji}>🔀</Text>
           <Text style={[styles.title, { color: colors.text }]}>FlexSwitch</Text>
           <Text style={[styles.sub, { color: colors.textLight }]}>
             A word appears in a color. We follow a rule — but the rule switches without warning.
           </Text>
-          <SpeakButton text="A word appears in a color. We follow a rule — but the rule switches without warning. This trains our brain to let go of one rule and grab another fast. That is cognitive flexibility — exactly what FlexSwitch builds." style={{ marginBottom: 12 }} />
+          <SpeakButton text="Our brains can get locked into one rule and struggle to switch — researchers call it cognitive rigidity, and it is trainable. FlexSwitch changes the rule every 5 trials without warning, forcing the brain to adapt fast. About 4 minutes, 20 trials. Watch how quickly we get sharper." style={{ marginBottom: 12 }} />
 
           <View style={[styles.ruleDemo, { backgroundColor: ACCENT_LIGHT, borderColor: ACCENT + '40' }]}>
             <Text style={[styles.ruleDemoTitle, { color: ACCENT }]}>Rule: TAP THE WORD</Text>

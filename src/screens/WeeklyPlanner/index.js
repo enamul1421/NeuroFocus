@@ -97,7 +97,7 @@ export default function WeeklyPlanner({
         <Text style={[styles.title, { color: colors.text }]}>Weekly Planner</Text>
         <Text style={[styles.subtitle, { color: colors.text }]}>{totalActive} active task{totalActive !== 1 ? 's' : ''}</Text>
         <SpeakButton
-          text="Our brains are wired to focus on what is urgent right now, not what is coming next week. That is why deadlines always feel like a surprise. Weekly Planner trains us to see the future and break big tasks into small steps before the panic hits. Every task we add and schedule builds our planning superpower. We are not disorganized — we are training."
+          text="Some brains have weaker prospective memory — the system that tracks future tasks and deadlines. Research shows external planning tools compensate directly and reduce missed deadlines by over 40%. Weekly Planner externalizes that system for us. We see the full week, break big tasks into steps, and nothing sneaks up. About 10 minutes to set up. Worth every second."
           style={{ marginBottom: 8 }}
         />
         <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>

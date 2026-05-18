@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const SCREEN = {
   DISCOVER:      'discover',
@@ -159,13 +160,13 @@ export default function TrueNorth({ navigation }) {
   if (screen === SCREEN.DISCOVER) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🧭" onBack={() => navigation.goBack()} tintColor={ACCENT} />
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.compassEmoji}>🧭</Text>
           <Text style={[styles.bigTitle, { color: colors.text }]}>Finding Our TrueNorth</Text>
           <Text style={[styles.sub, { color: colors.textLight }]}>
             Pick 5 values that describe us at our best — not who we always are, but who we want to be.
           </Text>
-          <SpeakButton text="Pick 5 values that describe us at our best — not who we always are, but who we want to be. Knowing our values helps us make decisions faster, feel less lost, and stay grounded when things get hard." style={{ marginBottom: 8 }} />
+          <SpeakButton text="Knowing our values reduces decision anxiety — studies show it activates the prefrontal cortex and cuts impulsive choices. Pick 5 values that feel true to who we want to be. Takes about 3 minutes. This becomes our compass when things get hard or confusing." style={{ marginBottom: 8 }} />
           <Text style={[styles.selCount, { color: selectedValues.length === 5 ? ACCENT : colors.textLight }]}>
             {selectedValues.length} / 5 selected
           </Text>
@@ -214,8 +215,8 @@ export default function TrueNorth({ navigation }) {
 
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🧭" onBack={() => navigation.goBack()} tintColor={ACCENT} />
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.compassEmoji}>🧭</Text>
           <Text style={[styles.bigTitle, { color: colors.text }]}>Our TrueNorth</Text>
 
           <View style={[styles.profileCard, { backgroundColor: ACCENT_LIGHT, borderColor: ACCENT + '40' }]}>
@@ -273,7 +274,7 @@ export default function TrueNorth({ navigation }) {
           )}
 
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <Text style={[styles.backBtnText, { color: colors.textLight }]}>← Back to app</Text>
+            <Text style={[styles.backBtnText, { color: colors.textLight }]}>← Back</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>

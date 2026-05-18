@@ -206,7 +206,7 @@ export default function MorningRoutine({
                 <Text style={styles.backBtnText}>← Back</Text>
               </TouchableOpacity>
               <Text style={[styles.title, { color: colors.text }]}>Daily Routine</Text>
-              <SpeakButton text="Our brains thrive on predictable structure, but building habits takes real effort when focus does not come easy. Every time we follow our daily routine, we reduce the mental energy spent on decisions and free up our brain for the things that truly matter. Routines are not boring — they are our superpower. Let's build ours together, one day at a time." style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+              <SpeakButton text="Even a short morning routine reduces cognitive load — the brain does not have to decide what comes next, so it saves energy for school. Research shows structured mornings improve focus and mood throughout the day. This takes about 3 minutes. Step by step. Let us set up the day." style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
               <Text style={[styles.subtitle, { color: colors.text }]}>~{totalMins} min · {morningTasks.length} tasks</Text>
               <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
                 <Text style={styles.goalText}>🎯 Goal: Complete the full routine every day</Text>
@@ -284,11 +284,9 @@ export default function MorningRoutine({
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.content}>
-          <TouchableOpacity onPress={() => setPhase(P.HOME)} style={styles.backBtn}>
-            <Text style={styles.backBtnText}>← Back</Text>
-          </TouchableOpacity>
           <Text style={[styles.title, { color: colors.text }]}>🌙 Night Before</Text>
           <Text style={[styles.subtitle, { color: colors.text }]}>~{nightBeforeTasks.reduce((s, t) => s + (t.mins || 0), 0)} min · {nightBeforeTasks.length} tasks</Text>
+          <SpeakButton text="Research on implementation intentions shows that deciding in advance — what to pack, what to wear, what comes first — cuts decision fatigue and frees up working memory for the next morning. Our brains use significantly more cognitive load on unplanned transitions. Takes about 5 minutes tonight. We do the thinking now so our morning brain does not have to." style={{ marginBottom: 8 }} />
 
           <View style={{ marginTop: 16 }}>
             {nightBeforeTasks.map(t => {
@@ -323,6 +321,9 @@ export default function MorningRoutine({
             <Text style={styles.startBtnText}>
               {allNightDone ? '🎉 All set for tomorrow!' : `Done for now (${nightChecked.length}/${nightBeforeTasks.length})`}
             </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setPhase(P.HOME)} style={styles.backBtn}>
+            <Text style={styles.backBtnText}>← Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -546,7 +547,7 @@ export default function MorningRoutine({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content:   { padding: 24, paddingBottom: 16 },
-  backBtn:   { marginBottom: 12 },
+  backBtn:   { marginBottom: 12, alignItems: 'center' },
   backBtnText: { fontSize: 15, color: colors.primary, fontWeight: '600' },
   header:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   title:     { fontSize: 24, fontWeight: '800', color: colors.text },

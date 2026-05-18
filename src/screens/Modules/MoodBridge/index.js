@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';import {
 } from 'react-native';
 import BodyDiagram from '../../../components/BodyDiagram';
 import SpeakButton, { speak, stopSpeech } from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 import AnimatedGuide from '../../../components/AnimatedGuide';
 import SessionProgress from '../../../components/SessionProgress';
 import { useStore } from '../../../store';
@@ -245,12 +246,9 @@ export default function MoodBridge({
   if (phase === P.PRE_EMOJI || phase === P.POST_EMOJI) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🌊" onBack={() => navigation.goBack()} tintColor="#006064" />
         <SessionProgress current={moodStep} total={8} />
         <View style={styles.content}>
-          <TouchableOpacity onPress={() => phase === P.PRE_EMOJI ? navigation.goBack() : null}
-            style={styles.backBtn}>
-            {phase === P.PRE_EMOJI && <Text style={styles.backBtnText}>← Back</Text>}
-          </TouchableOpacity>
           <Text style={[styles.moduleTag, { color: colors.text }]}>🌊 MoodBridge</Text>
           <Text style={[styles.headline, { color: colors.text }]}>
             {isPost ? 'How do you feel now?' : 'How are you feeling?'}
@@ -258,7 +256,7 @@ export default function MoodBridge({
           {!isPost && (
             <>
               <SpeakButton
-                text="Our brains feel emotions more deeply and intensely than most — that is one of our greatest strengths. And just like any strength, we can learn to channel it. Every time we name what we feel and do a short exercise, we train our brain to move through emotions faster and stronger. We are not too emotional — we are powerful. Let us check in and take care of ourselves right now."
+                text="Naming an emotion out loud reduces its intensity — brain imaging shows affect labeling activates the prefrontal cortex and dials down the amygdala in real time. Some brains feel emotions more intensely, so this skill matters more for us. We name what is happening, then do one short grounding exercise. Takes about 3 minutes. The more we do it, the faster our brain learns to shift out of a stuck state."
                 style={{ alignSelf: 'flex-start', marginBottom: 8 }}
               />
               <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
@@ -287,6 +285,11 @@ export default function MoodBridge({
               </TouchableOpacity>
             ))}
           </View>
+          {phase === P.PRE_EMOJI && (
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+              <Text style={styles.backBtnText}>← Back</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </SafeAreaView>
     );
@@ -721,7 +724,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   exerciseContainer: { alignItems: 'center' },
   content: { padding: 24, paddingBottom: 16 },
-  backBtn: { marginBottom: 12, minHeight: 20 },
+  backBtn: { marginBottom: 12, minHeight: 20, alignItems: 'center' },
   backBtnText: { fontSize: 15, color: colors.primary, fontWeight: '600' },
   moduleTag: { fontSize: 12, fontWeight: '800', color: colors.primary, letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' },
   headline:  { fontSize: 26, fontWeight: '800', color: colors.text, marginBottom: 8 },

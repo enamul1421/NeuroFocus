@@ -7,6 +7,7 @@ import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 // HardMoment: emotional pain from criticism, rejection, or perceived failure.
 // Evidence base: Barkley DESR, Neff self-compassion, reappraisal literature.
@@ -72,15 +73,16 @@ export default function HardMoment({ navigation }) {
   if (phase === PHASE.NAME) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="💙" onBack={() => navigation.goBack()} />
         <SessionProgress current={0} total={3} color={ACCENT} />
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.heroEmoji}>💙</Text>
+          
           <Text style={[styles.title, { color: colors.text }]}>Something stung.</Text>
           <Text style={[styles.sub, { color: colors.textLight }]}>
             That pain is real. We are not overreacting — our brain is wired to feel this intensely.
             Let us look at it together.
           </Text>
-          <SpeakButton text="That pain is real. We are not overreacting — our brain is wired to feel this intensely. We are not weak. We are human. Let us look at it together and find our way through." style={{ marginBottom: 12 }} />
+          <SpeakButton text="Some of us feel emotional pain more intensely — researchers call it rejection sensitivity, and it is neurological, not dramatic. Studies show that separating what happened from the story we wrote about it reduces that pain fast. This takes about 5 minutes. We are not overreacting. Let us look at it together." style={{ marginBottom: 12 }} />
 
           <Text style={[styles.sectionLabel, { color: colors.text }]}>What happened?</Text>
           <View style={styles.typeList}>
@@ -268,7 +270,7 @@ export default function HardMoment({ navigation }) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.center}>
-          <Text style={styles.heroEmoji}>💙</Text>
+          
           <Text style={[styles.title, { color: colors.text }]}>We stayed with it.  +55 XP</Text>
           <Text style={[styles.sub, { color: colors.textLight }]}>
             The pain was real. We did not let it write the whole story. That is self-compassion in practice.

@@ -3,11 +3,13 @@ import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Animated, ScrollView,
 } from 'react-native';
 import { SafeAreaView as SafeAreaViewCtx } from 'react-native-safe-area-context';
+import Svg, { Circle } from 'react-native-svg';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useStore } from '../../../store';
 import { colors, useColors } from '../../../theme';
 import SpeakButton from '../../../components/SpeakButton';
 import SessionProgress from '../../../components/SessionProgress';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const PHASE = { INTRO: 'intro', BREATHE: 'breathe', SCAN: 'scan', DONE: 'done' };
 
@@ -51,11 +53,18 @@ export default function SleepGuard({ navigation }) {
   const [scanIdx,      setScanIdx]      = useState(0);
   const [affirmation]                   = useState(() => AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)]);
 
+  const [now, setNow] = useState(new Date());
+
   const breathAnim = useRef(new Animated.Value(1.0)).current;
   const scanAnim   = useRef(new Animated.Value(1)).current;
   const timerRef   = useRef(null);
 
   useEffect(() => () => { clearTimeout(timerRef.current); }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(id);
+  }, []);
 
   // ── Breathing ──────────────────────────────────────────────────────────────
   function runBreathing(cycle = 0, pIdx = 0) {
@@ -109,6 +118,33 @@ export default function SleepGuard({ navigation }) {
     return `${hr}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
   }
 
+  function getBedtimeInfo() {
+    const bedtime = new Date(now);
+    bedtime.setHours(sleepTargetTime.hour, sleepTargetTime.minute, 0, 0);
+    const diffMin = Math.round((bedtime - now) / 60000);
+
+    let text, color;
+    if (diffMin > 120) {
+      const h = Math.floor(diffMin / 60), m = diffMin % 60;
+      text = `in ${h}h${m > 0 ? ` ${m}m` : ''}`;
+      color = '#4CAF50';
+    } else if (diffMin > 30) {
+      text = `in ${diffMin}m`;
+      color = '#FF9800';
+    } else if (diffMin >= 0) {
+      text = diffMin === 0 ? 'bedtime now' : `in ${diffMin}m`;
+      color = '#9C6FFF';
+    } else {
+      text = `${Math.abs(diffMin)}m past bedtime`;
+      color = '#FF5252';
+    }
+
+    // Arc fills over a 4-hour approach window
+    const windowMs = 4 * 60 * 60 * 1000;
+    const progress = Math.min(1, Math.max(0, (now - (bedtime - windowMs)) / windowMs));
+    return { text, color, progress };
+  }
+
   const todayLog = sleepLogs.find(l => l.date === new Date().toISOString().split('T')[0]);
   const streak   = (() => {
     let s = 0;
@@ -123,15 +159,13 @@ export default function SleepGuard({ navigation }) {
   if (phase === PHASE.INTRO) {
     return (
       <SafeAreaViewCtx style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="😴" onBack={() => navigation.goBack()} tintColor="#5B5EA6" />
         <SessionProgress current={0} total={3} color="#5B5EA6" />
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={[styles.backBtnText, { color: colors.textLight }]}>← Back</Text>
-        </TouchableOpacity>
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.moduleTag, { color: '#5B5EA6' }]}>😴 SleepGuard</Text>
           <Text style={[styles.headline, { color: colors.text }]}>Wind Down for Sleep</Text>
           <SpeakButton
-            text="Our brains never got the signal that it is time to stop. This module helps us wind down — with breathing and a body scan that tells our nervous system it is safe to rest. We are not stopping because we have to. We are stopping because we choose to take care of ourselves. Let us get our brain ready for sleep."
+            text="Some brains stay alert at night because cortisol does not drop the way it should. A 5-minute wind-down routine teaches our nervous system it is safe to switch off — breathing, body scan, one affirmation. Research backs this for improving sleep onset time. Phone down, brain ready."
             style={{ marginBottom: 12 }}
           />
 
@@ -142,13 +176,40 @@ export default function SleepGuard({ navigation }) {
             <Text style={[styles.infoItem, { color: colors.textLight }]}>✨  Goodnight affirmation  (30 sec)</Text>
           </View>
 
-          <View style={[styles.bedtimeCard, { backgroundColor: '#1E1E3A', borderColor: '#5B5EA6' }]}>
-            <Text style={styles.bedtimeLabel}>TARGET BEDTIME</Text>
-            <TouchableOpacity onPress={() => setShowPicker(true)}>
-              <Text style={styles.bedtimeValue}>{fmtTime(sleepTargetTime.hour, sleepTargetTime.minute)}</Text>
-              <Text style={styles.bedtimeTap}>Tap to change</Text>
-            </TouchableOpacity>
-          </View>
+          {(() => {
+            const { text: cdText, color: cdColor, progress } = getBedtimeInfo();
+            const R = 60, CIRC = 2 * Math.PI * R;
+            return (
+              <TouchableOpacity
+                style={[styles.bedtimeCard, { backgroundColor: '#1E1E3A', borderColor: '#5B5EA6' }]}
+                onPress={() => setShowPicker(true)}
+              >
+                <Text style={styles.bedtimeLabel}>TARGET BEDTIME</Text>
+                <View style={styles.clockWrapper}>
+                  <Svg width={150} height={150} style={StyleSheet.absoluteFill}>
+                    <Circle cx={75} cy={75} r={R} stroke="#2A2A4A" strokeWidth={8} fill="none" />
+                    <Circle
+                      cx={75} cy={75} r={R}
+                      stroke={cdColor}
+                      strokeWidth={8}
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={CIRC}
+                      strokeDashoffset={CIRC * (1 - progress)}
+                      transform="rotate(-90, 75, 75)"
+                    />
+                  </Svg>
+                  <View style={styles.clockCenter}>
+                    <Text style={[styles.bedtimeValue, { color: '#fff' }]}>
+                      {fmtTime(sleepTargetTime.hour, sleepTargetTime.minute)}
+                    </Text>
+                    <Text style={[styles.countdownText, { color: cdColor }]}>{cdText}</Text>
+                  </View>
+                </View>
+                <Text style={styles.bedtimeTap}>Tap to change</Text>
+              </TouchableOpacity>
+            );
+          })()}
 
           {showPicker && (
             <DateTimePicker
@@ -179,6 +240,9 @@ export default function SleepGuard({ navigation }) {
 
         <TouchableOpacity style={styles.startBtn} onPress={startBreathe}>
           <Text style={styles.startBtnText}>Begin wind-down →</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Text style={[styles.backBtnText, { color: colors.textLight }]}>← Back</Text>
         </TouchableOpacity>
       </SafeAreaViewCtx>
     );
@@ -259,7 +323,7 @@ const styles = StyleSheet.create({
   container:       { flex: 1 },
   centerContainer: { alignItems: 'center' },
   content:         { padding: 20, paddingTop: 8, paddingBottom: 16 },
-  backBtn:         { paddingVertical: 4, paddingHorizontal: 20, marginBottom: 4, alignSelf: 'flex-start' },
+  backBtn:         { paddingVertical: 8, marginBottom: 12, alignItems: 'center' },
   backBtnText:     { fontSize: 14 },
 
   moduleTag:  { fontSize: 12, fontWeight: '800', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' },
@@ -271,8 +335,11 @@ const styles = StyleSheet.create({
 
   bedtimeCard:  { borderRadius: 16, borderWidth: 2, padding: 20, alignItems: 'center', marginBottom: 14 },
   bedtimeLabel: { fontSize: 11, fontWeight: '800', color: '#8888CC', letterSpacing: 1, marginBottom: 4 },
-  bedtimeValue: { fontSize: 42, fontWeight: '900', color: '#fff', textAlign: 'center' },
+  bedtimeValue: { fontSize: 28, fontWeight: '900', color: '#fff', textAlign: 'center' },
   bedtimeTap:   { fontSize: 12, color: '#8888CC', textAlign: 'center', marginTop: 4 },
+  clockWrapper: { width: 150, height: 150, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginVertical: 8 },
+  clockCenter:  { alignItems: 'center', justifyContent: 'center' },
+  countdownText:{ fontSize: 12, fontWeight: '700', marginTop: 3 },
 
   streakCard: { borderRadius: 12, borderWidth: 1, padding: 12, alignItems: 'center', marginBottom: 10 },
   streakText: { fontSize: 15, fontWeight: '800' },

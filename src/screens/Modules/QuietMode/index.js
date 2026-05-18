@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 // QuietMode — shutdown response for autism.
 // Physiologically opposite to meltdown: dorsal vagal freeze state.
@@ -74,15 +75,15 @@ export default function QuietMode({ navigation }) {
   // ── RECOGNIZE ────────────────────────────────────────────────────────────────
   if (phase === PHASE.RECOGNIZE) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: '#0A0F14' }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🌑" onBack={() => navigation.goBack()} tintColor="#90A4AE" />
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.heroEmoji}>🌑</Text>
           <Text style={styles.darkTitle}>Something shut us down.</Text>
           <Text style={styles.darkSub}>
             That is okay. The brain does this to protect itself.
             We are not broken. We just need quiet.
           </Text>
-          <SpeakButton text="That is okay. The brain does this to protect itself. We are not broken. We are not lazy. We just need quiet right now. Let us take it one breath at a time." style={{ marginBottom: 12 }} />
+          <SpeakButton text="Sometimes the brain shuts down — a real neurological response to protect itself from overload by reducing all output. This is not weakness. It is our system doing exactly what it is designed to do. Use QuietMode for 5 to 30 minutes — whatever our system needs. It gives us a structured way to rest and return at our own pace. No pressure here." style={{ marginBottom: 12 }} />
 
           <Text style={styles.darkLabel}>What is happening right now?</Text>
           <Text style={styles.darkHint}>Tap anything that fits. Or just tap one.</Text>
@@ -122,7 +123,7 @@ export default function QuietMode({ navigation }) {
   // ── QUIET ────────────────────────────────────────────────────────────────────
   if (phase === PHASE.QUIET) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: '#0A0F14' }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.heroEmoji}>🌫️</Text>
           <Text style={styles.darkTitle}>Reduce the input.</Text>
@@ -162,7 +163,7 @@ export default function QuietMode({ navigation }) {
     const secs = waitSec !== null ? waitSec % 60 : null;
 
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: '#0A0F14' }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.center}>
           {waitSec === null ? (
             <>
@@ -245,7 +246,7 @@ export default function QuietMode({ navigation }) {
   // ── DONE ─────────────────────────────────────────────────────────────────────
   if (phase === PHASE.DONE) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: '#0A0F14' }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.center}>
           <Text style={styles.heroEmoji}>🌑</Text>
           <Text style={styles.darkTitle}>We came back.</Text>
@@ -273,10 +274,10 @@ const styles = StyleSheet.create({
   center:    { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
 
   heroEmoji: { fontSize: 48, textAlign: 'center', marginBottom: 14, marginTop: 4 },
-  darkTitle: { fontSize: 24, fontWeight: '900', color: '#ECEFF1', textAlign: 'center', marginBottom: 8 },
-  darkSub:   { fontSize: 14, color: '#78909C', lineHeight: 22, textAlign: 'center', marginBottom: 24 },
-  darkLabel: { fontSize: 15, fontWeight: '700', color: '#B0BEC5', marginBottom: 6 },
-  darkHint:  { fontSize: 12, color: '#546E7A', marginBottom: 16 },
+  darkTitle: { fontSize: 24, fontWeight: '900', color: '#1A237E', textAlign: 'center', marginBottom: 8 },
+  darkSub:   { fontSize: 14, color: '#455A64', lineHeight: 22, textAlign: 'center', marginBottom: 24 },
+  darkLabel: { fontSize: 15, fontWeight: '700', color: '#37474F', marginBottom: 6 },
+  darkHint:  { fontSize: 12, color: '#607D8B', marginBottom: 16 },
 
   signList: { gap: 8, marginBottom: 24 },
   signBtn:  { borderRadius: 12, borderWidth: 1, borderColor: '#263238', padding: 14 },

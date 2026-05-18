@@ -8,6 +8,7 @@ import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const PHASE = { DUMP: 'dump', CHECK: 'check', CHOOSE: 'choose', DONE: 'done' };
 const ACCENT       = '#0277BD';
@@ -133,14 +134,15 @@ export default function WorryBreak({ navigation }) {
   if (phase === PHASE.DUMP) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🌀" onBack={() => navigation.goBack()} tintColor={ACCENT} />
         <SessionProgress current={0} total={3} color={ACCENT} />
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.heroEmoji}>🌀</Text>
+          
           <Text style={[styles.title, { color: colors.text }]}>What is worrying us?</Text>
+          <SpeakButton text="Worry loops happen when the threat-detection system stays on high alert — and some brains run this system hotter than others. Research shows that writing a worry down and asking three questions about it actually quiets the amygdala. Takes about 3 minutes. We name it, check it, then decide what to do. Let's get it out of our head." style={{ marginBottom: 8, alignSelf: 'center' }} />
           <Text style={[styles.sub, { color: colors.textLight }]}>
             Name it. Getting the worry out of our head is step one.
           </Text>
-          <SpeakButton text="Name it. Getting the worry out of our head is step one. Worries feel bigger when they stay inside. Once we see them clearly, we can decide what to do with them." style={{ marginBottom: 12 }} />
 
           <View style={styles.typeGrid}>
             {WORRY_TYPES.map(w => (
@@ -379,16 +381,16 @@ export default function WorryBreak({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content:   { padding: 24, paddingTop: 8, paddingBottom: 48 },
+  content:   { padding: 24, paddingTop: 4, paddingBottom: 16 },
   center:    { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
 
   heroEmoji:    { fontSize: 44, textAlign: 'center', marginBottom: 8, marginTop: 0 },
   phaseTag:     { fontSize: 11, fontWeight: '800', letterSpacing: 1.2, marginBottom: 10 },
   title:        { fontSize: 24, fontWeight: '900', textAlign: 'center', marginBottom: 6 },
-  sub:          { fontSize: 14, lineHeight: 22, textAlign: 'center', marginBottom: 20 },
+  sub:          { fontSize: 14, lineHeight: 22, textAlign: 'center', marginBottom: 12 },
   sectionLabel: { fontSize: 15, fontWeight: '800', marginBottom: 10, marginTop: 4 },
 
-  typeGrid:  { gap: 8, marginBottom: 20 },
+  typeGrid:  { gap: 6, marginBottom: 12 },
   typeChip:  { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 12, borderWidth: 1.5, padding: 14 },
   typeEmoji: { fontSize: 20 },
   typeLabel: { fontSize: 14, fontWeight: '600', flex: 1 },

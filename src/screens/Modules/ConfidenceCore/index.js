@@ -7,6 +7,7 @@ import { useStore } from '../../../store';
 import { colors, useColors } from '../../../theme';
 import { logSession } from '../../../services/logger';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 import AnimatedGuide from '../../../components/AnimatedGuide';
 import SessionProgress from '../../../components/SessionProgress';
 
@@ -150,17 +151,12 @@ export default function ConfidenceCore({
   if (phase === P.INTRO) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="⚡" onBack={() => navigation.goBack()} />
         <ScrollView contentContainerStyle={styles.content}>
-
-
-          <Text style={[styles.moduleTag, { color: colors.text }]}>⚡ ConfidenceCore</Text>
           <Text style={[styles.headline, { color: colors.text }]}>Build your evidence</Text>
-          <SpeakButton text="Our brains are wired to notice what goes wrong and move on from what goes right — but we can change that. Every win we log becomes permanent evidence of how capable we truly are. When we feel doubt creeping in, our archive is right here to remind us of the truth. Scientists call this building a positive evidence base, and it genuinely rewires how we see ourselves over time. Session by session, we build unshakeable confidence from real proof. We are not behind — we are rising. Let's add a win." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
-          <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.goalText, { color: colors.text }]}>🎯 Goal: Win archive grows every session</Text>
-          </View>
-          <AnimatedGuide placeholder="confidence" label="Log a win" width={110} height={110} style={{ marginTop: 20, marginBottom: 20 }} />
-          <Text style={[styles.body, { color: colors.text }]}>Log any win. Your archive proves what you can do.</Text>
+          <SpeakButton text="Our brains often filter for threats and miss wins — it is called a negativity bias and it is wired in. Logging real wins rewires that filter through something researchers call positive evidence accumulation. Takes 2 minutes per session. The archive grows, and so does our belief in ourselves." size="sm" style={{ alignSelf: 'center', marginBottom: 8 }} />
+          <Text style={[styles.body, { color: colors.text }]}>Every win counts.</Text>
+          <AnimatedGuide placeholder="confidence" width={110} height={110} style={{ marginTop: 12, marginBottom: 12 }} />
 
           {/* Stats row */}
           {totalWins > 0 && (
@@ -214,6 +210,9 @@ export default function ConfidenceCore({
           )}
           <TouchableOpacity style={styles.hardDayBtn} onPress={() => { setHardStep(0); setHardInputs(['','','']); setPhase(P.HARD_1); }}>
             <Text style={styles.hardDayBtnText}>Having a hard day</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.backLink} onPress={() => navigation.goBack()}>
+            <Text style={styles.backLinkText}>← Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -587,6 +586,8 @@ const styles = StyleSheet.create({
   introBtns:   { padding: 24, paddingBottom: 32, gap: 10 },
   hardDayBtn:  { alignItems: 'center', paddingVertical: 10 },
   hardDayBtnText: { fontSize: 14, color: colors.textLight, textDecorationLine: 'underline' },
+  backLink:    { alignItems: 'center', paddingVertical: 8 },
+  backLinkText:{ fontSize: 13, color: colors.textLight },
 
   catGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 24 },
   catCard: { width: '30%', backgroundColor: '#fff', borderRadius: 12, borderWidth: 1.5, borderColor: '#E0E0E0', padding: 12, alignItems: 'center', gap: 5 },

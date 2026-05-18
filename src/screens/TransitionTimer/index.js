@@ -319,7 +319,7 @@ export default function TransitionTimer({ navigation }) {
         <Text style={[styles.sub, { color: colors.textLight }]}>
           How long until we switch? We will warn at 2 minutes.
         </Text>
-        <SpeakButton text="The Transition Timer helps us know when it is time to switch tasks. We get a warning at 2 minutes so our brain can start wrapping up instead of being cut off suddenly. Pick how long we have." style={{ marginBottom: 16 }} />
+        <SpeakButton text="Task-switching is harder for some brains — the executive system needs advance notice to disengage cleanly. Research shows a 2-minute warning before transitions reduces frustration and improves task completion. The timer gives our brain that signal. Pick the duration. Let it run." style={{ marginBottom: 16 }} />
 
         <View style={styles.presetGrid}>
           {PRESETS.map(m => (

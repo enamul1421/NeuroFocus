@@ -8,6 +8,7 @@ import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
 import SpeakButton from '../../../components/SpeakButton';
 import TimerRing from '../../../components/TimerRing';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const PHASE = {
   FREEZE:   'freeze',
@@ -116,14 +117,14 @@ export default function GlassBreak({ navigation, route }) {
   if (phase === PHASE.FREEZE) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🧊" onBack={() => navigation.goBack()} />
         <SessionProgress current={0} total={4} color={ACCENT} />
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.heroEmoji}>🧊</Text>
           <Text style={[styles.title, { color: colors.text }]}>We are frozen.</Text>
           <Text style={[styles.sub, { color: colors.textLight }]}>
             That is real. The brain locked up. We are going to break through it — one small step at a time.
           </Text>
-          <SpeakButton text="That is real. The brain locked up. It is not laziness — it is a freeze response. We are going to break through it one small step at a time. We just need to start anywhere." style={{ marginBottom: 12 }} />
+          <SpeakButton text="Freeze happens when the brain hits overwhelm — sometimes the start signal is weaker, not missing. Body movement breaks the freeze state in under 60 seconds by shifting brain chemistry. We shrink the task, move the body, then launch for just 10 minutes. One step is all it takes to unstick." style={{ marginBottom: 12 }} />
 
           <Text style={[styles.sectionLabel, { color: colors.text }]}>What has us stuck?</Text>
           <View style={styles.optionList}>

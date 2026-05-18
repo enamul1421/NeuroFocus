@@ -7,6 +7,7 @@ import { useStore } from '../../../store';
 import { colors, useColors } from '../../../theme';
 import { logSession } from '../../../services/logger';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 import AnimatedGuide from '../../../components/AnimatedGuide';
 import SessionProgress from '../../../components/SessionProgress';
 
@@ -211,10 +212,11 @@ export default function FocusControl({
   if (phase === PHASE.INTRO) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🎯" onBack={() => navigation.goBack()} />
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.moduleTag, { color: colors.text }]}>🎯 FocusControl</Text>
           <Text style={[styles.headline, { color: colors.text }]}>Train your mental brake</Text>
-          <SpeakButton text="Our brains are wired for curiosity and quick reactions — and we can train them to focus like a laser. In this exercise, we see notifications pop up and choose which ones deserve our attention. Every time we pause and decide, we strengthen a real skill called inhibitory control. Session by session, we get sharper, calmer, and more in charge of where our attention goes. We are not distracted — we are training. Let's do this." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+          <SpeakButton text="Inhibitory control — the brain's stop signal — can be weaker but is absolutely trainable. Clinical studies show even 10 sessions improve response accuracy. Today: 25 cards in 1.5 seconds each — tap study items, ignore distractions. About 3 minutes. Every good stop is a real brain rep." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
           <View style={[styles.goalCard, { backgroundColor: colors.surface }]}>
             <Text style={[styles.goalText, { color: colors.text }]}>🎯 Goal: Brake score → 80+ · False alarms under 10%</Text>
           </View>
@@ -236,6 +238,9 @@ export default function FocusControl({
         </ScrollView>
         <TouchableOpacity style={styles.primaryBtn} onPress={startSession}>
           <Text style={styles.primaryBtnText}>Start training →</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.backLink} onPress={() => navigation.goBack()}>
+          <Text style={styles.backLinkText}>← Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -421,7 +426,9 @@ const styles = StyleSheet.create({
   lastCard: { backgroundColor: colors.primaryLight, borderRadius: 12, padding: 14, marginTop: 12, borderWidth: 1, borderColor: colors.primary + '40' },
   lastTitle: { fontSize: 11, fontWeight: '800', color: colors.primary, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4 },
   lastStat:  { fontSize: 14, color: colors.text },
-  primaryBtn: { backgroundColor: colors.primary, margin: 24, marginBottom: 32, padding: 18, borderRadius: 14, alignItems: 'center' },
+  primaryBtn:   { backgroundColor: colors.primary, margin: 24, marginBottom: 8, padding: 18, borderRadius: 14, alignItems: 'center' },
+  backLink:     { alignItems: 'center', paddingVertical: 10, marginBottom: 16 },
+  backLinkText: { fontSize: 15, color: colors.primary, fontWeight: '600' },
   primaryBtnText: { color: '#fff', fontSize: 17, fontWeight: '700' },
 
   progressBg:   { height: 3, backgroundColor: '#F0F0F0' },

@@ -7,6 +7,7 @@ import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const PHASE  = { SELECT: 'select', BREATHE: 'breathe', LABEL: 'label', DONE: 'done' };
 const ACCENT = '#2E7D32';
@@ -124,14 +125,14 @@ export default function StillPoint({ navigation }) {
   if (phase === PHASE.SELECT) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="🍃" onBack={() => navigation.goBack()} tintColor={ACCENT} />
         <View style={styles.center}>
-          <Text style={{ fontSize: 52, marginBottom: 12 }}>🍃</Text>
           <Text style={[styles.title, { color: colors.text }]}>StillPoint</Text>
           <Text style={[styles.sub, { color: colors.textLight }]}>
             A short mindfulness practice. No experience needed.
             We just follow the breath.
           </Text>
-          <SpeakButton text="A short mindfulness practice. No experience needed. We just follow the breath. Even two minutes of this lowers anxiety, improves focus, and helps our nervous system reset." style={{ marginBottom: 12 }} />
+          <SpeakButton text="Even 2 minutes of mindfulness lowers cortisol and improves focus — backed by dozens of studies. We do not need to empty our mind. Just notice the breath and come back when our mind wanders — that noticing IS the training. Pick 2 or 5 minutes. That is all." style={{ marginBottom: 12 }} />
 
           <TouchableOpacity
             style={[styles.modeCard, { backgroundColor: ACCENT_LIGHT, borderColor: ACCENT + '60' }]}

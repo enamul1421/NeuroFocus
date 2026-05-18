@@ -5,6 +5,7 @@ import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
 import SpeakButton from '../../../components/SpeakButton';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 // FocusWatch — sustained attention / vigilance training.
 // Colored circles appear every 2s. Tap ONLY the target color.
@@ -154,14 +155,14 @@ export default function FocusWatch({ navigation }) {
     const demoTarget = COLORS[1]; // show blue as demo
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="👁" onBack={() => navigation.goBack()} tintColor={ACCENT} />
         <View style={styles.center}>
-          <Text style={{ fontSize: 48, marginBottom: 12 }}>👁</Text>
           <Text style={[styles.title, { color: colors.text }]}>FocusWatch</Text>
           <Text style={[styles.sub, { color: colors.textLight }]}>
             Colored circles appear one at a time. Tap only the target color.
             Most circles are NOT the target — stay sharp.
           </Text>
-          <SpeakButton text="Colored circles appear one at a time. Tap only the target color. Most circles are NOT the target — stay sharp. This builds sustained attention and impulse control, two skills our brain needs every day." style={{ marginBottom: 12 }} />
+          <SpeakButton text="Sustained attention is trainable — research shows vigilance tasks improve focus accuracy after just 8 sessions. For 3 minutes, one target color appears in a stream of distractors. Tap it. Ignore everything else. Every correct call is a real neural rep." style={{ marginBottom: 12 }} />
 
           <View style={[styles.demoCard, { backgroundColor: ACCENT_LIGHT, borderColor: ACCENT + '40' }]}>
             <View style={[styles.demoCircle, { backgroundColor: demoTarget.hex }]} />

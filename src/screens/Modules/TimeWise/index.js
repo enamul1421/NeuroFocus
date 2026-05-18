@@ -8,6 +8,7 @@ import { colors, useColors } from '../../../theme';
 import SpeakButton from '../../../components/SpeakButton';
 import AnimatedGuide from '../../../components/AnimatedGuide';
 import SessionProgress from '../../../components/SessionProgress';
+import ModuleTopBar from '../../../components/ModuleTopBar';
 
 const TASKS = [
   'Do homework',
@@ -96,11 +97,12 @@ export default function TimeWise({
   if (phase === PHASE.INTRO) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ModuleTopBar emoji="⏱" onBack={() => navigation.goBack()} />
         <SessionProgress current={phaseStep} total={4} />
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.moduleTag, { color: colors.text }]}>⏱ TimeWise</Text>
           <Text style={[styles.headline, { color: colors.text }]}>Task Duration Prediction</Text>
-          <SpeakButton text="Our brains are wired for big ideas, creativity, and energy — and we can absolutely train them to master time too. Every time we guess how long something takes and then check how close we were, we build a real superpower called time awareness. Scientists have proven this kind of practice actually rewires the brain and makes us sharper. Session by session, we get calmer, more confident, and more in control of our day. We are not behind — we are training. Pick a task, make our best guess, do it, and see how close we are. We've got this." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
+          <SpeakButton text="Some brains do not feel time passing — researchers call it time blindness, and it affects planning and deadlines. TimeWise trains time sense by making us guess how long a task takes, do it, then compare. Even 5 sessions sharpens accuracy. One task at a time. About 10 minutes. Let us calibrate." size="sm" style={{ alignSelf: 'flex-start', marginBottom: 4 }} />
           <AnimatedGuide placeholder="timewise" label="Predict · Do · Compare" width={110} height={110} />
           <Text style={[styles.body, { color: colors.text }]}>Guess. Do it. See how close you were.</Text>
           <View style={[styles.goalBox, { backgroundColor: colors.surface }]}>
@@ -110,6 +112,9 @@ export default function TimeWise({
         </ScrollView>
         <TouchableOpacity style={styles.button} onPress={() => setPhase(PHASE.PREDICT)}>
           <Text style={styles.buttonText}>Pick a task →</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.backLink} onPress={() => navigation.goBack()}>
+          <Text style={styles.backLinkText}>← Back</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -344,7 +349,9 @@ const styles = StyleSheet.create({
   trendPred: { fontSize: 12, color: colors.textLight, marginRight: 12 },
   trendCoeff: { fontSize: 14, fontWeight: '800', width: 40, textAlign: 'right' },
 
-  button: { backgroundColor: colors.primary, marginHorizontal: 24, marginBottom: 32, padding: 18, borderRadius: 14, alignItems: 'center' },
+  button: { backgroundColor: colors.primary, marginHorizontal: 24, marginBottom: 8, padding: 18, borderRadius: 14, alignItems: 'center' },
+  backLink:     { alignItems: 'center', paddingVertical: 10, marginBottom: 16 },
+  backLinkText: { fontSize: 15, color: colors.primary, fontWeight: '600' },
   buttonDisabled: { backgroundColor: '#C5C5E8' },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: '800' },
 });

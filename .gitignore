@@ -11,3 +11,4 @@ web-build/
 web-build/
 .env
 src/config/openai.js
+src/config/elevenlabs.js

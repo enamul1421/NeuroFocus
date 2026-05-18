@@ -1,111 +1,111 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import * as Speech from 'expo-speech';
-import { setAudioModeAsync } from 'expo-audio';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system/legacy';
+import { XI_API_KEY, VOICE_ID } from '../config/elevenlabs';
 
-let bestVoice = undefined;
-let voiceResolved = false;
+const TEMP_FILE = FileSystem.cacheDirectory + 'xi_speech.mp3';
 
-async function resolveBestVoice() {
-  if (voiceResolved) return;
-  try {
-    const voices = await Speech.getAvailableVoicesAsync();
-    const en = voices.filter(v => v.language?.startsWith('en'));
-    const premium  = en.find(v => v.quality === 'Premium');
-    const enhanced = en.find(v => v.quality === 'Enhanced');
-    bestVoice = (premium || enhanced)?.identifier ?? undefined;
-  } catch {}
-  voiceResolved = true;
-}
+async function elevenLabsFetch(text) {
+  const res = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+    {
+      method: 'POST',
+      headers: {
+        'xi-api-key': XI_API_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg',
+      },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_turbo_v2',
+        voice_settings: {
+          stability: 0.55,
+          similarity_boost: 0.75,
+          style: 0.0,
+          use_speaker_boost: false,
+        },
+      }),
+    }
+  );
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`ElevenLabs ${res.status}: ${body.slice(0, 200)}`);
+  }
 
-async function setAudio() {
-  try { await setAudioModeAsync({ playsInSilentModeIOS: true }); } catch {}
-}
-
-function splitSentences(text) {
-  return text.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
-}
-
-function speakChunks(chunks, onDone, onStop, timerRef, total) {
-  if (!chunks.length) { onDone(); return; }
-  const [first, ...rest] = chunks;
-  const isLast = rest.length === 0;
-  const isNearEnd = total && chunks.length <= 2;
-  Speech.speak(first, {
-    voice: bestVoice,
-    rate:  isLast ? 0.68 : isNearEnd ? 0.72 : 0.75,
-    pitch: 1.0,
-    onDone: () => {
-      if (rest.length) {
-        timerRef.current = setTimeout(
-          () => speakChunks(rest, onDone, onStop, timerRef, total),
-          isNearEnd ? 1100 : 900
-        );
-      } else {
-        onDone();
-      }
-    },
-    onStopped: onStop,
-    onError:   onStop,
-  });
+  // ArrayBuffer → base64 → temp file
+  const buf   = await res.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  const b64 = btoa(bin);
+  await FileSystem.writeAsStringAsync(TEMP_FILE, b64, { encoding: 'base64' });
+  return TEMP_FILE;
 }
 
 export default function SpeakButton({ text, style }) {
-  const [speaking, setSpeakingState] = useState(false);
-  const speakingRef = useRef(false);
-  const timerRef = useRef(null);
+  const [state, setState] = useState('idle'); // idle | loading | playing
+  const soundRef = useRef(null);
 
-  function setSpeaking(val) {
-    speakingRef.current = val;
-    setSpeakingState(val);
+  async function stop() {
+    try { await soundRef.current?.stopAsync(); } catch {}
+    try { await soundRef.current?.unloadAsync(); } catch {}
+    soundRef.current = null;
+    setState('idle');
   }
 
-  useEffect(() => {
-    resolveBestVoice();
-    return () => {
-      Speech.stop();
-      clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  async function toggle() {
-    if (speakingRef.current) {
-      clearTimeout(timerRef.current);
-      Speech.stop();
-      setSpeaking(false);
-      return;
-    }
+  async function play() {
+    if (state !== 'idle') { stop(); return; }
     if (!text) return;
-    await setAudio();
-    await resolveBestVoice();
-    setSpeaking(true);
-    const chunks = splitSentences(text);
-    speakChunks(chunks, () => setSpeaking(false), () => setSpeaking(false), timerRef, chunks.length);
+    setState('loading');
+    try {
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+      const uri = await elevenLabsFetch(text);
+      const { sound } = await Audio.Sound.createAsync({ uri });
+      soundRef.current = sound;
+      setState('playing');
+      sound.setOnPlaybackStatusUpdate(status => {
+        if (status.didJustFinish || status.isLoaded === false) stop();
+      });
+      await sound.playAsync();
+    } catch (e) {
+      console.warn('ElevenLabs TTS error:', e.message);
+      setState('idle');
+    }
   }
+
+  const label = state === 'loading' ? '⏳ Loading…'
+              : state === 'playing' ? '🔇 Stop'
+              : '🔊 Listen';
 
   return (
     <TouchableOpacity
-      style={[styles.btn, speaking && styles.btnActive, style]}
-      onPress={toggle}
+      style={[styles.btn, state !== 'idle' && styles.btnActive, style]}
+      onPress={play}
       activeOpacity={0.7}
+      disabled={state === 'loading'}
     >
-      <Text style={[styles.label, speaking && styles.labelActive]}>
-        {speaking ? '🔇 Stop' : '🔊 Listen'}
+      <Text style={[styles.label, state !== 'idle' && styles.labelActive]}>
+        {label}
       </Text>
     </TouchableOpacity>
   );
 }
 
+// Standalone speak helper (used by other screens)
 export async function speak(text) {
   if (!text) return;
-  await setAudio();
-  await resolveBestVoice();
-  Speech.speak(text, { voice: bestVoice, rate: 0.75, pitch: 1.0 });
+  try {
+    await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+    const uri = await elevenLabsFetch(text);
+    const { sound } = await Audio.Sound.createAsync({ uri });
+    await sound.playAsync();
+  } catch (e) {
+    console.warn('ElevenLabs speak error:', e.message);
+  }
 }
 
-export function stopSpeech() {
-  Speech.stop();
-}
+export function stopSpeech() {}
 
 const styles = StyleSheet.create({
   btn:        { borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5, backgroundColor: '#F0F0F0', alignSelf: 'flex-start' },

@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
+import SpeakButton from '../../../components/SpeakButton';
 
 const PHASE = {
   SCENARIO: 'scenario',
@@ -253,6 +254,7 @@ export default function ConnectWell({ navigation }) {
         <SessionProgress current={0} total={4} color={ACCENT} />
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.phaseTag, { color: ACCENT }]}>SCENARIO</Text>
+          <SpeakButton text="Read the situation below. Think about how the other person might have been feeling, then choose how to respond. Each scenario trains real social awareness." style={{ marginBottom: 8 }} />
 
           <View style={[styles.scenarioCard, { backgroundColor: ACCENT_LIGHT, borderColor: ACCENT + '50' }]}>
             <Text style={styles.scenarioText}>{scenario.situation}</Text>

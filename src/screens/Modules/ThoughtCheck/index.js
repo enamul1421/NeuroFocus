@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
+import SpeakButton from '../../../components/SpeakButton';
 
 const PHASE = { CATCH: 'catch', CHECK: 'check', REFRAME: 'reframe', DONE: 'done' };
 const ACCENT       = '#37474F';
@@ -68,6 +69,7 @@ export default function ThoughtCheck({ navigation }) {
           <Text style={[styles.sub, { color: colors.textLight }]}>
             We cannot challenge a thought we have not named. Pick the one closest to what is in our head.
           </Text>
+          <SpeakButton text="We cannot challenge a thought we have not named. Pick the one closest to what is in our head right now. Naming it is already the first step to changing it." style={{ marginBottom: 12 }} />
 
           <View style={styles.typeList}>
             {THOUGHT_TYPES.map(t => (

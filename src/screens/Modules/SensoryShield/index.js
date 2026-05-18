@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
+import SpeakButton from '../../../components/SpeakButton';
 
 const PHASE = {
   MODE:    'mode',    // avoid vs seek
@@ -132,6 +133,7 @@ export default function SensoryShield({ navigation }) {
           <Text style={[styles.sub, { color: colors.textLight }]}>
             What is our sensory experience right now?
           </Text>
+          <SpeakButton text="What is our sensory experience right now? Our senses can get overwhelmed or under-stimulated. Both are valid. This module helps us figure out what is happening and what to do about it." style={{ marginBottom: 12 }} />
 
           <TouchableOpacity
             style={[styles.modeCard, { backgroundColor: '#F3E5F5', borderColor: ACCENT + '60' }]}

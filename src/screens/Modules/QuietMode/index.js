@@ -81,6 +81,7 @@ export default function QuietMode({ navigation }) {
             That is okay. The brain does this to protect itself.
             We are not broken. We just need quiet.
           </Text>
+          <SpeakButton text="That is okay. The brain does this to protect itself. We are not broken. We are not lazy. We just need quiet right now. Let us take it one breath at a time." style={{ marginBottom: 12 }} />
 
           <Text style={styles.darkLabel}>What is happening right now?</Text>
           <Text style={styles.darkHint}>Tap anything that fits. Or just tap one.</Text>

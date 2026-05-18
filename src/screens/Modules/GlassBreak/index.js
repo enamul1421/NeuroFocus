@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
+import SpeakButton from '../../../components/SpeakButton';
 import TimerRing from '../../../components/TimerRing';
 
 const PHASE = {
@@ -122,6 +123,7 @@ export default function GlassBreak({ navigation, route }) {
           <Text style={[styles.sub, { color: colors.textLight }]}>
             That is real. The brain locked up. We are going to break through it — one small step at a time.
           </Text>
+          <SpeakButton text="That is real. The brain locked up. It is not laziness — it is a freeze response. We are going to break through it one small step at a time. We just need to start anywhere." style={{ marginBottom: 12 }} />
 
           <Text style={[styles.sectionLabel, { color: colors.text }]}>What has us stuck?</Text>
           <View style={styles.optionList}>

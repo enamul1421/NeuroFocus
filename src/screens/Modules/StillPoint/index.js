@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
+import SpeakButton from '../../../components/SpeakButton';
 
 const PHASE  = { SELECT: 'select', BREATHE: 'breathe', LABEL: 'label', DONE: 'done' };
 const ACCENT = '#2E7D32';
@@ -130,6 +131,7 @@ export default function StillPoint({ navigation }) {
             A short mindfulness practice. No experience needed.
             We just follow the breath.
           </Text>
+          <SpeakButton text="A short mindfulness practice. No experience needed. We just follow the breath. Even two minutes of this lowers anxiety, improves focus, and helps our nervous system reset." style={{ marginBottom: 12 }} />
 
           <TouchableOpacity
             style={[styles.modeCard, { backgroundColor: ACCENT_LIGHT, borderColor: ACCENT + '60' }]}

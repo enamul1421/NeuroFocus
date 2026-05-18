@@ -164,6 +164,7 @@ export default function TrueNorth({ navigation }) {
           <Text style={[styles.sub, { color: colors.textLight }]}>
             Pick 5 values that describe us at our best — not who we always are, but who we want to be.
           </Text>
+          <SpeakButton text="Pick 5 values that describe us at our best — not who we always are, but who we want to be. Knowing our values helps us make decisions faster, feel less lost, and stay grounded when things get hard." style={{ marginBottom: 8 }} />
           <Text style={[styles.selCount, { color: selectedValues.length === 5 ? ACCENT : colors.textLight }]}>
             {selectedValues.length} / 5 selected
           </Text>

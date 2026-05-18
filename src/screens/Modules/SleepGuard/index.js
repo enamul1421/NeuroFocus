@@ -124,6 +124,9 @@ export default function SleepGuard({ navigation }) {
     return (
       <SafeAreaViewCtx style={[styles.container, { backgroundColor: colors.background }]}>
         <SessionProgress current={0} total={3} color="#5B5EA6" />
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Text style={[styles.backBtnText, { color: colors.textLight }]}>← Back</Text>
+        </TouchableOpacity>
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.moduleTag, { color: '#5B5EA6' }]}>😴 SleepGuard</Text>
           <Text style={[styles.headline, { color: colors.text }]}>Wind Down for Sleep</Text>
@@ -256,6 +259,8 @@ const styles = StyleSheet.create({
   container:       { flex: 1 },
   centerContainer: { alignItems: 'center' },
   content:         { padding: 20, paddingTop: 8, paddingBottom: 16 },
+  backBtn:         { paddingVertical: 4, paddingHorizontal: 20, marginBottom: 4, alignSelf: 'flex-start' },
+  backBtnText:     { fontSize: 14 },
 
   moduleTag:  { fontSize: 12, fontWeight: '800', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' },
   headline:   { fontSize: 26, fontWeight: '800', marginBottom: 10 },

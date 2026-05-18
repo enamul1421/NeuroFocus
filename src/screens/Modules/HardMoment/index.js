@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
+import SpeakButton from '../../../components/SpeakButton';
 
 // HardMoment: emotional pain from criticism, rejection, or perceived failure.
 // Evidence base: Barkley DESR, Neff self-compassion, reappraisal literature.
@@ -79,6 +80,7 @@ export default function HardMoment({ navigation }) {
             That pain is real. We are not overreacting — our brain is wired to feel this intensely.
             Let us look at it together.
           </Text>
+          <SpeakButton text="That pain is real. We are not overreacting — our brain is wired to feel this intensely. We are not weak. We are human. Let us look at it together and find our way through." style={{ marginBottom: 12 }} />
 
           <Text style={[styles.sectionLabel, { color: colors.text }]}>What happened?</Text>
           <View style={styles.typeList}>

@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
+import SpeakButton from '../../../components/SpeakButton';
 
 const PHASE = { DUMP: 'dump', CHECK: 'check', CHOOSE: 'choose', DONE: 'done' };
 const ACCENT       = '#0277BD';
@@ -139,6 +140,7 @@ export default function WorryBreak({ navigation }) {
           <Text style={[styles.sub, { color: colors.textLight }]}>
             Name it. Getting the worry out of our head is step one.
           </Text>
+          <SpeakButton text="Name it. Getting the worry out of our head is step one. Worries feel bigger when they stay inside. Once we see them clearly, we can decide what to do with them." style={{ marginBottom: 12 }} />
 
           <View style={styles.typeGrid}>
             {WORRY_TYPES.map(w => (

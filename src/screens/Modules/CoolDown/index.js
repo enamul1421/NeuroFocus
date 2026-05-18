@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { colors, useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
+import SpeakButton from '../../../components/SpeakButton';
 import TimerRing from '../../../components/TimerRing';
 
 const PHASE = {
@@ -162,6 +163,7 @@ export default function CoolDown({ navigation }) {
           <Text style={styles.bigEmoji}>🆘</Text>
           <Text style={styles.sosTitle}>We need to cool down.</Text>
           <Text style={styles.sosSub}>Our brain is flooded right now. That is okay. Let us do one thing to reset it.</Text>
+          <SpeakButton text="Our brain is flooded right now. That is okay. It happens. We are not bad — we are overwhelmed. Let us do one thing to reset it, step by step." style={{ marginBottom: 12 }} />
 
           <Text style={styles.angerLabel}>How angry are we right now?</Text>
           <View style={styles.angerRow}>

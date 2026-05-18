@@ -6,6 +6,18 @@ import { XI_API_KEY, VOICE_ID } from '../config/elevenlabs';
 
 const TEMP_FILE = FileSystem.cacheDirectory + 'xi_speech.mp3';
 
+// Global singleton — ensures only one voice plays at a time across all screens
+let _currentSound = null;
+let _stopCurrentCallback = null;
+
+async function stopGlobal() {
+  if (_stopCurrentCallback) _stopCurrentCallback();
+  try { await _currentSound?.stopAsync(); } catch {}
+  try { await _currentSound?.unloadAsync(); } catch {}
+  _currentSound = null;
+  _stopCurrentCallback = null;
+}
+
 async function elevenLabsFetch(text) {
   const res = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
@@ -48,21 +60,27 @@ export default function SpeakButton({ text, style }) {
   const soundRef = useRef(null);
 
   async function stop() {
+    _stopCurrentCallback = null;
     try { await soundRef.current?.stopAsync(); } catch {}
     try { await soundRef.current?.unloadAsync(); } catch {}
     soundRef.current = null;
+    if (_currentSound === soundRef.current) _currentSound = null;
     setState('idle');
   }
 
   async function play() {
     if (state !== 'idle') { stop(); return; }
     if (!text) return;
+    // Stop whatever is playing globally first
+    await stopGlobal();
     setState('loading');
     try {
       await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
       const uri = await elevenLabsFetch(text);
       const { sound } = await Audio.Sound.createAsync({ uri });
       soundRef.current = sound;
+      _currentSound = sound;
+      _stopCurrentCallback = () => { setState('idle'); };
       setState('playing');
       sound.setOnPlaybackStatusUpdate(status => {
         if (status.didJustFinish || status.isLoaded === false) stop();

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
 import SessionProgress from '../../../components/SessionProgress';
+import SpeakButton from '../../../components/SpeakButton';
 
 // FocusWatch — sustained attention / vigilance training.
 // Colored circles appear every 2s. Tap ONLY the target color.
@@ -160,6 +161,7 @@ export default function FocusWatch({ navigation }) {
             Colored circles appear one at a time. Tap only the target color.
             Most circles are NOT the target — stay sharp.
           </Text>
+          <SpeakButton text="Colored circles appear one at a time. Tap only the target color. Most circles are NOT the target — stay sharp. This builds sustained attention and impulse control, two skills our brain needs every day." style={{ marginBottom: 12 }} />
 
           <View style={[styles.demoCard, { backgroundColor: ACCENT_LIGHT, borderColor: ACCENT + '40' }]}>
             <View style={[styles.demoCircle, { backgroundColor: demoTarget.hex }]} />

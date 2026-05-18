@@ -97,6 +97,7 @@ export default function SpeakUp({ navigation }) {
           <Text style={[styles.sub, { color: colors.textLight }]}>
             Exact words for situations that feel hard to navigate. Pick one.
           </Text>
+          <SpeakButton text="Exact words for situations that feel hard to navigate. Pick one. These scripts are not about being perfect — they are about having something real to say when our brain goes blank." style={{ marginBottom: 12 }} />
 
           {SCRIPTS.map(s => (
             <TouchableOpacity

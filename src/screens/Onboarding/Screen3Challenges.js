@@ -10,7 +10,7 @@ const CHALLENGES = [
   { id: 'focus',      label: 'Staying focused for long tasks',           module: 'FocusCtrl' },
   { id: 'memory',     label: 'Forgetting things mid-task',               module: 'Memory' },
   { id: 'anger',      label: 'Managing big emotions or anger',           module: 'CoolDown' },
-  { id: 'worry',      label: 'Worrying too much about things',           module: 'Worry' },
+  { id: 'worry',      label: 'Worrying too much about things',           module: 'WorryBreak' },
   { id: 'sleep',      label: 'Trouble sleeping or winding down',         module: 'SleepGuard' },
   { id: 'sensory',    label: 'Getting overwhelmed by noise or crowds',   module: 'Sensory' },
   { id: 'social',     label: 'Feeling lost in social situations',        module: 'Connect' },

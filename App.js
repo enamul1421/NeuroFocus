@@ -65,7 +65,6 @@ const moduleHeader = {
   headerTitle: '',
   headerBackTitle: '',
   headerShadowVisible: false,
-  headerStyle: { backgroundColor: '#F9F9F9' },
   headerTintColor: '#5B5EA6',
 };
 

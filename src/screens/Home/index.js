@@ -198,8 +198,8 @@ export default function Home({
   const speechText = h < 12
     ? `Good morning${name}. Our brain works best when we give it a strong start. ${streakLine}Let us kick off with the Daily Routine — it takes just a few minutes and sets up our whole day. We are building something powerful here, one morning at a time.`
     : h < 17
-    ? `Good afternoon${name}. This is our training window — the sweet spot after school when our brain is ready to grow. ${streakLine}TimeWise, MoodBridge, FocusControl, MemoryBank, and ConfidenceCore are all here for us. Even one session today moves us forward. Our future self will thank us. Let us go.`
-    : `Good evening${name}. We made it through the day — and that counts. ${streakLine}Before we wind down, let us log a win in ConfidenceCore and do our Night Prep routine. Small actions tonight make tomorrow so much easier. We are doing great. Let us finish strong.`;
+    ? `Good afternoon${name}. This is our training window — the sweet spot after school when our brain is ready to grow. ${streakLine}TimeWise, Moods, FocusCtrl, Memory, and Confidence are all here for us. Even one session today moves us forward. Our future self will thank us. Let us go.`
+    : `Good evening${name}. We made it through the day — and that counts. ${streakLine}Before we wind down, let us log a win in Confidence and do our Night Prep routine. Small actions tonight make tomorrow so much easier. We are doing great. Let us finish strong.`;
 
 
   const today = new Date().toDateString();

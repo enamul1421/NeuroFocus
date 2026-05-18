@@ -21,8 +21,14 @@ function makeBeepURI(freq = 440, ms = 80, vol = 0.5) {
   v.setUint16(32, 2, true); v.setUint16(34, 16, true);
   wr(36, 'data'); v.setUint32(40, n * 2, true);
   for (let i = 0; i < n; i++) {
-    const fade = Math.min(i, n - i, 80) / 80;
-    v.setInt16(44 + i * 2, Math.round(Math.sin(2 * Math.PI * freq * i / sr) * fade * vol * 32767), true);
+    // Sharp attack (5 samples), exponential decay — sounds like a clock tick, not a heartbeat
+    const attack = Math.min(i / 5, 1);
+    const decay  = Math.exp(-i / (n * 0.25));
+    const env    = attack * decay;
+    // Mix two harmonics for a "ding" quality rather than a pure sine pulse
+    const wave = 0.7 * Math.sin(2 * Math.PI * freq * i / sr)
+               + 0.3 * Math.sin(2 * Math.PI * freq * 2 * i / sr);
+    v.setInt16(44 + i * 2, Math.round(wave * env * vol * 32767), true);
   }
   const bytes = new Uint8Array(buf);
   let bin = '';
@@ -30,9 +36,9 @@ function makeBeepURI(freq = 440, ms = 80, vol = 0.5) {
   return `data:audio/wav;base64,${btoa(bin)}`;
 }
 
-const TICK_URI  = makeBeepURI(440, 60,  0.25);  // soft tick every 5s
-const BEEP_URI  = makeBeepURI(660, 100, 0.55);  // warning beep every 1s
-const ALERT_URI = makeBeepURI(960, 80,  0.80);  // critical alert every 1s
+const TICK_URI  = makeBeepURI(1100, 25, 0.30);  // short high-pitch tick every 5s
+const BEEP_URI  = makeBeepURI(880,  40, 0.55);  // crisp warning ding every 1s
+const ALERT_URI = makeBeepURI(1400, 30, 0.80);  // sharp alert every 1s
 
 const { width: SW, height: SH } = Dimensions.get('window');
 

@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useColors } from '../../../theme';
+import SpeakButton from '../../../components/SpeakButton';
 
 const ACCENT       = '#1565C0';
 const ACCENT_LIGHT = '#E3F2FD';

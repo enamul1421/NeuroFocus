@@ -9,6 +9,7 @@ import {
   MODULE_SCHEDULES, scheduleModuleNotification,
   scheduleMedicationReminder, scheduleHyperfocusBreaker,
 } from '../../services/notifications';
+import SpeakButton from '../../components/SpeakButton';
 
 function fmt(hour, minute) {
   const h = hour % 12 || 12;
@@ -22,7 +23,7 @@ export default function NotificationSettings({
   const {
     moduleNotifications, setModuleNotification,
     themeMode, setThemeMode,
-    medicationEnabled, medicationTime, setMedicationReminder,
+    medicationEnabled, medicationTimes, setMedicationReminder,
     hyperfocusEnabled, hyperfocusIntervalMinutes, setHyperfocusBreaker,
   } = useStore(s => ({
     moduleNotifications:       s.moduleNotifications,
@@ -30,7 +31,7 @@ export default function NotificationSettings({
     themeMode:                 s.themeMode || 'system',
     setThemeMode:              s.setThemeMode,
     medicationEnabled:         s.medicationEnabled,
-    medicationTime:            s.medicationTime || { hour: 8, minute: 0 },
+    medicationTimes:           s.medicationTimes || [{ hour: 8, minute: 0 }],
     setMedicationReminder:     s.setMedicationReminder,
     hyperfocusEnabled:         s.hyperfocusEnabled,
     hyperfocusIntervalMinutes: s.hyperfocusIntervalMinutes || 90,
@@ -38,21 +39,38 @@ export default function NotificationSettings({
   }));
 
   const [pickerKey,    setPickerKey]   = useState(null);
-  const [showMedPicker,setShowMedPick] = useState(false);
+  const [medPickerIdx, setMedPickerIdx]= useState(null);
 
   const HF_INTERVALS = [30, 60, 90, 120];
 
   async function toggleMedication(value) {
-    setMedicationReminder(value, medicationTime.hour, medicationTime.minute);
-    await scheduleMedicationReminder(value, medicationTime.hour, medicationTime.minute);
+    setMedicationReminder(value, medicationTimes);
+    await scheduleMedicationReminder(value, medicationTimes);
   }
 
   async function onMedTimeChange(event, date) {
-    setShowMedPick(false);
-    if (event.type === 'dismissed' || !date) return;
-    const hour = date.getHours(); const minute = date.getMinutes();
-    setMedicationReminder(medicationEnabled, hour, minute);
-    await scheduleMedicationReminder(medicationEnabled, hour, minute);
+    const idx = medPickerIdx;
+    setMedPickerIdx(null);
+    if (event.type === 'dismissed' || !date || idx === null) return;
+    const updated = medicationTimes.map((t, i) =>
+      i === idx ? { hour: date.getHours(), minute: date.getMinutes() } : t
+    );
+    setMedicationReminder(medicationEnabled, updated);
+    await scheduleMedicationReminder(medicationEnabled, updated);
+  }
+
+  async function addMedTime() {
+    if (medicationTimes.length >= 5) return;
+    const updated = [...medicationTimes, { hour: 12, minute: 0 }];
+    setMedicationReminder(medicationEnabled, updated);
+    await scheduleMedicationReminder(medicationEnabled, updated);
+  }
+
+  async function removeMedTime(idx) {
+    if (medicationTimes.length <= 1) return;
+    const updated = medicationTimes.filter((_, i) => i !== idx);
+    setMedicationReminder(medicationEnabled, updated);
+    await scheduleMedicationReminder(medicationEnabled, updated);
   }
 
   async function toggleHyperfocus(value) {
@@ -90,6 +108,7 @@ export default function NotificationSettings({
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
         <Text style={[styles.headline, { color: colors.text }]}>Settings</Text>
+        <SpeakButton text="Settings lets us control how NeuroFocus works for us — dark mode, notifications for each module, medication reminders, and more. We can set it up once and it runs in the background to support us." style={{ marginBottom: 12 }} />
 
         {/* Dark mode */}
         <Text style={[styles.sectionHead, { color: colors.primary }]}>APPEARANCE</Text>
@@ -150,24 +169,44 @@ export default function NotificationSettings({
 
         {/* Medication reminder */}
         <Text style={[styles.sectionHead, { color: colors.primary }]}>MEDICATION</Text>
-        <View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={styles.rowIcon}>💊</Text>
-          <View style={styles.rowInfo}>
-            <Text style={[styles.rowLabel, { color: colors.text }]}>Daily medication reminder</Text>
-            <TouchableOpacity onPress={() => medicationEnabled && setShowMedPick(true)}>
-              <Text style={styles.rowDays}>{fmt(medicationTime.hour, medicationTime.minute)} · tap to change</Text>
-            </TouchableOpacity>
+        <View style={[styles.block, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.blockHeader}>
+            <Text style={styles.rowIcon}>💊</Text>
+            <Text style={[styles.rowLabel, { color: colors.text, flex: 1 }]}>Medication reminders</Text>
+            <Switch
+              value={medicationEnabled}
+              onValueChange={toggleMedication}
+              trackColor={{ false: '#E0E0E0', true: colors.primary + '80' }}
+              thumbColor={medicationEnabled ? colors.primary : '#fff'}
+            />
           </View>
-          <Switch
-            value={medicationEnabled}
-            onValueChange={toggleMedication}
-            trackColor={{ false: '#E0E0E0', true: colors.primary + '80' }}
-            thumbColor={medicationEnabled ? colors.primary : '#fff'}
-          />
-          {showMedPicker && (
+          {medicationTimes.map((t, i) => (
+            <View key={i} style={styles.medTimeRow}>
+              <TouchableOpacity
+                style={styles.medTimeBtn}
+                onPress={() => medicationEnabled && setMedPickerIdx(i)}
+              >
+                <Text style={[styles.rowDays, { color: colors.text }]}>
+                  {fmt(t.hour, t.minute)}
+                </Text>
+                <Text style={{ fontSize: 11, color: colors.textLight }}>tap to change</Text>
+              </TouchableOpacity>
+              {medicationTimes.length > 1 && (
+                <TouchableOpacity onPress={() => removeMedTime(i)} style={styles.medRemove}>
+                  <Text style={{ color: '#E53935', fontSize: 18 }}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
+          {medicationTimes.length < 5 && (
+            <TouchableOpacity onPress={addMedTime} style={styles.medAddBtn}>
+              <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 14 }}>+ Add reminder</Text>
+            </TouchableOpacity>
+          )}
+          {medPickerIdx !== null && (
             <DateTimePicker
               mode="time"
-              value={(() => { const d = new Date(); d.setHours(medicationTime.hour, medicationTime.minute, 0); return d; })()}
+              value={(() => { const d = new Date(); const t = medicationTimes[medPickerIdx]; d.setHours(t.hour, t.minute, 0); return d; })()}
               is24Hour={false}
               onChange={onMedTimeChange}
             />
@@ -231,6 +270,12 @@ const styles = StyleSheet.create({
     borderRadius: 14, padding: 14,
     marginBottom: 10, borderWidth: 1,
   },
+  block:       { borderRadius: 14, padding: 14, marginBottom: 10, borderWidth: 1 },
+  blockHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  medTimeRow:  { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#E0E0E0' },
+  medTimeBtn:  { flex: 1 },
+  medRemove:   { padding: 8 },
+  medAddBtn:   { paddingVertical: 10, alignItems: 'center', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#E0E0E0', marginTop: 4 },
   rowIcon: { fontSize: 24, width: 32, textAlign: 'center' },
   rowInfo: { flex: 1 },
   rowLabel:{ fontSize: 14, fontWeight: '700', color: '#1A1A2E' },

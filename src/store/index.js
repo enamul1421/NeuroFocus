@@ -282,11 +282,11 @@ export const useStore = create((set, get) => ({
 
   // Medication reminder
   medicationEnabled: false,
-  medicationTime:    { hour: 8, minute: 0 },
+  medicationTimes:   [{ hour: 8, minute: 0 }],
   medicationLogs:    [],
 
-  setMedicationReminder: (enabled, hour, minute) => {
-    set({ medicationEnabled: enabled, medicationTime: { hour, minute } });
+  setMedicationReminder: (enabled, times) => {
+    set({ medicationEnabled: enabled, medicationTimes: times });
     get().persist();
   },
 
@@ -569,7 +569,7 @@ export const useStore = create((set, get) => ({
       quietModeLogs:             s.quietModeLogs,
       focusWatchSessions:        s.focusWatchSessions,
       medicationEnabled:         s.medicationEnabled,
-      medicationTime:            s.medicationTime,
+      medicationTimes:           s.medicationTimes,
       medicationLogs:            s.medicationLogs,
       hyperfocusEnabled:         s.hyperfocusEnabled,
       hyperfocusIntervalMinutes: s.hyperfocusIntervalMinutes,

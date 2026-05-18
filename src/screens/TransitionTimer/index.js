@@ -6,6 +6,7 @@ import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
 import { useColors } from '../../theme';
 import TimerRing from '../../components/TimerRing';
+import SpeakButton from '../../components/SpeakButton';
 
 // Generate a sine-wave WAV as a data URI — no external file needed
 function makeBeepURI(freq = 440, ms = 80, vol = 0.5) {
@@ -312,6 +313,7 @@ export default function TransitionTimer({ navigation }) {
         <Text style={[styles.sub, { color: colors.textLight }]}>
           How long until we switch? We will warn at 2 minutes.
         </Text>
+        <SpeakButton text="The Transition Timer helps us know when it is time to switch tasks. We get a warning at 2 minutes so our brain can start wrapping up instead of being cut off suddenly. Pick how long we have." style={{ marginBottom: 16 }} />
 
         <View style={styles.presetGrid}>
           {PRESETS.map(m => (

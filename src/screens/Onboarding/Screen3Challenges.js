@@ -4,12 +4,18 @@ import { useStore } from '../../store';
 import { colors, useColors } from '../../theme';
 
 const CHALLENGES = [
-  { id: 'time', label: 'Losing track of time', module: 'TimeWise' },
-  { id: 'initiation', label: 'Forgetting to start things', module: 'PlanForward' },
-  { id: 'planning', label: 'Getting overwhelmed by big projects', module: 'PlanForward' },
-  { id: 'focus', label: 'Staying focused', module: 'FocusControl' },
-  { id: 'emotion', label: 'Managing emotions when stressed', module: 'MoodBridge' },
-  { id: 'confidence', label: 'Believing I can do it', module: 'ConfidenceCore' },
+  { id: 'time',       label: 'Losing track of time',                    module: 'TimeWise' },
+  { id: 'planning',   label: 'Getting overwhelmed by big projects',      module: 'Weekly Planner' },
+  { id: 'starting',   label: 'Freezing up and not starting things',      module: 'GlassBreak' },
+  { id: 'focus',      label: 'Staying focused for long tasks',           module: 'FocusCtrl' },
+  { id: 'memory',     label: 'Forgetting things mid-task',               module: 'Memory' },
+  { id: 'anger',      label: 'Managing big emotions or anger',           module: 'CoolDown' },
+  { id: 'worry',      label: 'Worrying too much about things',           module: 'Worry' },
+  { id: 'sleep',      label: 'Trouble sleeping or winding down',         module: 'SleepGuard' },
+  { id: 'sensory',    label: 'Getting overwhelmed by noise or crowds',   module: 'Sensory' },
+  { id: 'social',     label: 'Feeling lost in social situations',        module: 'Connect' },
+  { id: 'speakup',    label: 'Hard to speak up for myself',              module: 'SpeakUp' },
+  { id: 'confidence', label: 'Doubting myself or my abilities',          module: 'Confidence' },
 ];
 
 export default function Screen3Challenges({

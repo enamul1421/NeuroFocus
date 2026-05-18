@@ -6,6 +6,7 @@ import { LineChart, BarChart } from 'react-native-chart-kit';
 import { useStore } from '../../store';
 import { colors, useColors } from '../../theme';
 import { BADGES, levelInfo } from '../../utils/achievements';
+import SpeakButton from '../../components/SpeakButton';
 
 const W = Dimensions.get('window').width;
 const CHART_W = W - 48;
@@ -217,6 +218,7 @@ export default function Progress({
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={[styles.headline, { color: colors.text }]}>Progress</Text>
+        <SpeakButton text="This is our progress dashboard. It shows how many sessions we have done, what badges we have earned, and how our skills are growing over time. Every session counts — even the small ones." style={{ marginBottom: 12 }} />
 
         {/* ── Assessment banner ── */}
         {nextWeek !== null && (

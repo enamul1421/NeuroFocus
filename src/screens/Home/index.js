@@ -94,7 +94,6 @@ export default function Home({
     sleepLogs:            s.sleepLogs            || [],
     glassBreakSessions:   s.glassBreakSessions   || [],
     medicationEnabled:    s.medicationEnabled,
-    medicationTime:       s.medicationTime       || { hour: 8, minute: 0 },
     medicationLogs:       s.medicationLogs       || [],
     addMedicationLog:     s.addMedicationLog,
     angerCheckIns:        s.angerCheckIns        || [],

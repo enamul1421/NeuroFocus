@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
+import SpeakButton from '../../../components/SpeakButton';
 
 // QuietMode — shutdown response for autism.
 // Physiologically opposite to meltdown: dorsal vagal freeze state.

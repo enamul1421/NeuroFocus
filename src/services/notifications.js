@@ -174,19 +174,21 @@ export async function scheduleSleepNotifications(hour, minute) {
   }
 }
 
-export async function scheduleMedicationReminder(enabled, hour, minute) {
+export async function scheduleMedicationReminder(enabled, times = []) {
   const all = await Notifications.getAllScheduledNotificationsAsync();
   await Promise.all(
     all.filter(n => n.identifier.startsWith('med_')).map(n =>
       Notifications.cancelScheduledNotificationAsync(n.identifier)
     )
   );
-  if (!enabled) return;
-  await Notifications.scheduleNotificationAsync({
-    identifier: 'med_daily',
-    content: { title: '💊 Medication reminder', body: 'Time to take our medication.', sound: true },
-    trigger: { hour, minute, repeats: true },
-  });
+  if (!enabled || !times.length) return;
+  await Promise.all(times.map((t, i) =>
+    Notifications.scheduleNotificationAsync({
+      identifier: `med_${i}`,
+      content: { title: '💊 Medication reminder', body: 'Time to take our medication.', sound: true },
+      trigger: { hour: t.hour, minute: t.minute, repeats: true },
+    })
+  ));
 }
 
 export async function scheduleHyperfocusBreaker(enabled, intervalMinutes) {

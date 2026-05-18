@@ -5,6 +5,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStore } from '../../../store';
 import { useColors } from '../../../theme';
+import SpeakButton from '../../../components/SpeakButton';
 
 const SCREEN = {
   DISCOVER:      'discover',

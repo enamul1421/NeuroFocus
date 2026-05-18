@@ -379,10 +379,10 @@ export default function WorryBreak({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content:   { padding: 24, paddingBottom: 48 },
+  content:   { padding: 24, paddingTop: 8, paddingBottom: 48 },
   center:    { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
 
-  heroEmoji:    { fontSize: 52, textAlign: 'center', marginBottom: 12, marginTop: 4 },
+  heroEmoji:    { fontSize: 44, textAlign: 'center', marginBottom: 8, marginTop: 0 },
   phaseTag:     { fontSize: 11, fontWeight: '800', letterSpacing: 1.2, marginBottom: 10 },
   title:        { fontSize: 24, fontWeight: '900', textAlign: 'center', marginBottom: 6 },
   sub:          { fontSize: 14, lineHeight: 22, textAlign: 'center', marginBottom: 20 },

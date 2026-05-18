@@ -18,13 +18,13 @@ export default function Screen1Welcome({ navigation }) {
         </Text>
 
         <Text style={styles.body}>
-          15 minutes a day. Six skills. Built on real science.
+          20+ tools across 4 areas. Built on real science. Used daily, at our own pace.
         </Text>
 
         <View style={styles.pillList}>
-          {['Time awareness', 'Planning', 'Focus', 'Memory', 'Emotion regulation', 'Confidence'].map(skill => (
-            <View key={skill} style={styles.pill}>
-              <Text style={styles.pillText}>{skill}</Text>
+          {['🌅 Daily Habits', '🧠 Brain Gym', '🌱 Life Skills', '🆘 Anytime Support'].map(area => (
+            <View key={area} style={styles.pill}>
+              <Text style={styles.pillText}>{area}</Text>
             </View>
           ))}
         </View>

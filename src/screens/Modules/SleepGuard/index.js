@@ -178,7 +178,7 @@ export default function SleepGuard({ navigation }) {
 
           {(() => {
             const { text: cdText, color: cdColor, progress } = getBedtimeInfo();
-            const R = 60, CIRC = 2 * Math.PI * R;
+            const R = 72, CIRC = 2 * Math.PI * R;
             return (
               <TouchableOpacity
                 style={[styles.bedtimeCard, { backgroundColor: '#1E1E3A', borderColor: '#5B5EA6' }]}
@@ -186,24 +186,24 @@ export default function SleepGuard({ navigation }) {
               >
                 <Text style={styles.bedtimeLabel}>TARGET BEDTIME</Text>
                 <View style={styles.clockWrapper}>
-                  <Svg width={150} height={150} style={StyleSheet.absoluteFill}>
-                    <Circle cx={75} cy={75} r={R} stroke="#2A2A4A" strokeWidth={8} fill="none" />
+                  <Svg width={180} height={180} style={StyleSheet.absoluteFill}>
+                    <Circle cx={90} cy={90} r={R} stroke="#2A2A4A" strokeWidth={8} fill="none" />
                     <Circle
-                      cx={75} cy={75} r={R}
+                      cx={90} cy={90} r={R}
                       stroke={cdColor}
                       strokeWidth={8}
                       fill="none"
                       strokeLinecap="round"
                       strokeDasharray={CIRC}
                       strokeDashoffset={CIRC * progress}
-                      transform="rotate(-90, 75, 75)"
+                      transform="rotate(-90, 90, 90)"
                     />
                   </Svg>
                   <View style={styles.clockCenter}>
                     <Text style={[styles.bedtimeValue, { color: '#fff' }]}>
                       {fmtTime(sleepTargetTime.hour, sleepTargetTime.minute)}
                     </Text>
-                    <Text style={[styles.countdownText, { color: cdColor }]}>{cdText}</Text>
+                    <Text style={[styles.countdownText, { color: cdColor }]} numberOfLines={1} adjustsFontSizeToFit>{cdText}</Text>
                   </View>
                 </View>
                 <Text style={styles.bedtimeTap}>Tap to change</Text>
@@ -353,9 +353,9 @@ const styles = StyleSheet.create({
   bedtimeLabel: { fontSize: 11, fontWeight: '800', color: '#8888CC', letterSpacing: 1, marginBottom: 4 },
   bedtimeValue: { fontSize: 28, fontWeight: '900', color: '#fff', textAlign: 'center' },
   bedtimeTap:   { fontSize: 12, color: '#8888CC', textAlign: 'center', marginTop: 4 },
-  clockWrapper: { width: 150, height: 150, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginVertical: 8 },
-  clockCenter:  { alignItems: 'center', justifyContent: 'center' },
-  countdownText:{ fontSize: 12, fontWeight: '700', marginTop: 3 },
+  clockWrapper: { width: 180, height: 180, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginVertical: 8 },
+  clockCenter:  { alignItems: 'center', justifyContent: 'center', width: 120 },
+  countdownText:{ fontSize: 11, fontWeight: '700', marginTop: 3, textAlign: 'center' },
 
   pickerOverlay: { flex: 1, backgroundColor: '#000000AA', justifyContent: 'flex-end' },
   pickerSheet:   { backgroundColor: '#1E1E3A', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 32, paddingTop: 8 },

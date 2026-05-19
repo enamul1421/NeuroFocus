@@ -110,8 +110,17 @@ export default function Home({
 
   // Groups collapsed by default except TODAY
   const [expandedGroups, setExpandedGroups] = React.useState({ daily: true, support: false, weekly: false, grow: false });
+  const scrollRef = useRef(null);
+  const groupYRef = useRef({});
+
   function toggleGroup(key) {
+    const wasExpanded = expandedGroups[key];
     setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
+    if (!wasExpanded && groupYRef.current[key] !== undefined) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ y: groupYRef.current[key] - 12, animated: true });
+      }, 80);
+    }
   }
 
   function isSkipped(key) { return skippedModules[key] === new Date().toISOString().split('T')[0]; }
@@ -262,7 +271,7 @@ export default function Home({
 
   return (
     <SafeAreaView edges={['top','left','right']} style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* Header */}
         <View style={styles.header}>
@@ -393,7 +402,11 @@ export default function Home({
           const cols = group.forceCols || (group.modules.length === 3 ? 3 : group.modules.length === 1 ? 1 : 2);
           const gridW = cols === 4 ? CARD_W4 : cols === 3 ? CARD_W3 : cols === 1 ? '100%' : CARD_W2;
           return (
-            <View key={group.key} style={styles.groupBlock}>
+            <View
+              key={group.key}
+              style={styles.groupBlock}
+              onLayout={e => { groupYRef.current[group.key] = e.nativeEvent.layout.y; }}
+            >
               <TouchableOpacity
                 style={styles.groupHeader}
                 onPress={() => toggleGroup(group.key)}

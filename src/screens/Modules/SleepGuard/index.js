@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Animated, ScrollView,
+  View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Animated, ScrollView, Modal, Platform,
 } from 'react-native';
 import { SafeAreaView as SafeAreaViewCtx } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
@@ -211,17 +211,33 @@ export default function SleepGuard({ navigation }) {
             );
           })()}
 
-          {showPicker && (
-            <DateTimePicker
-              mode="time"
-              value={(() => { const d = new Date(); d.setHours(sleepTargetTime.hour, sleepTargetTime.minute); return d; })()}
-              is24Hour={false}
-              onChange={(e, d) => {
-                setShowPicker(false);
-                if (d) setSleepTargetTime(d.getHours(), d.getMinutes());
-              }}
-            />
-          )}
+          <Modal visible={showPicker} transparent animationType="fade">
+            <TouchableOpacity
+              style={styles.pickerOverlay}
+              activeOpacity={1}
+              onPress={() => setShowPicker(false)}
+            >
+              <View style={styles.pickerSheet}>
+                <DateTimePicker
+                  mode="time"
+                  display="spinner"
+                  value={(() => { const d = new Date(); d.setHours(sleepTargetTime.hour, sleepTargetTime.minute); return d; })()}
+                  is24Hour={false}
+                  textColor="#fff"
+                  onChange={(e, d) => {
+                    if (d) setSleepTargetTime(d.getHours(), d.getMinutes());
+                  }}
+                  style={{ width: '100%' }}
+                />
+                <TouchableOpacity
+                  style={styles.pickerDone}
+                  onPress={() => setShowPicker(false)}
+                >
+                  <Text style={styles.pickerDoneText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </Modal>
 
           {streak > 0 && (
             <View style={[styles.streakCard, { backgroundColor: colors.primaryLight, borderColor: colors.primary }]}>
@@ -340,6 +356,11 @@ const styles = StyleSheet.create({
   clockWrapper: { width: 150, height: 150, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginVertical: 8 },
   clockCenter:  { alignItems: 'center', justifyContent: 'center' },
   countdownText:{ fontSize: 12, fontWeight: '700', marginTop: 3 },
+
+  pickerOverlay: { flex: 1, backgroundColor: '#000000AA', justifyContent: 'flex-end' },
+  pickerSheet:   { backgroundColor: '#1E1E3A', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 32, paddingTop: 8 },
+  pickerDone:    { marginHorizontal: 24, marginTop: 8, backgroundColor: '#5B5EA6', borderRadius: 14, padding: 16, alignItems: 'center' },
+  pickerDoneText:{ color: '#fff', fontSize: 17, fontWeight: '800' },
 
   streakCard: { borderRadius: 12, borderWidth: 1, padding: 12, alignItems: 'center', marginBottom: 10 },
   streakText: { fontSize: 15, fontWeight: '800' },

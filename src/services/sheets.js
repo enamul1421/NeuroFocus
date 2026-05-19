@@ -1,4 +1,4 @@
-import { SHEETS_URL } from '../config/openai';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxpLYNi8oGefi2MJrhvx-c6M2Tns5_wyeMI-Tzy0FxfKnql1qfRczAEhKfOIg-OzWjp4Q/exec';
 
 // Fire-and-forget — never blocks the user, fails silently
 export function syncToSheets(module, participantCode, payload) {

@@ -2,7 +2,8 @@ import { useState, useRef } from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system/legacy';
-import { XI_API_KEY, VOICE_ID } from '../config/elevenlabs';
+const XI_API_KEY = 'sk_81563a3be58af92003ab744188596fa49e0c9a6f5e47d1d6';
+const VOICE_ID   = 'jsCqWAovK2LkecY7zXl4';
 
 const TEMP_FILE = FileSystem.cacheDirectory + 'xi_speech.mp3';
 

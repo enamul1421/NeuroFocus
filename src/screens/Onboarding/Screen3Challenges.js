@@ -23,15 +23,16 @@ export default function Screen3Challenges({
   navigation }) {
   const colors = useColors();
   const setOnboardingData = useStore(s => s.setOnboardingData);
-  const [selected, setSelected] = useState([]);
+  const [selected,      setSelected]      = useState([]);
+  const [limitOverride, setLimitOverride] = useState(false);
+  const LIMIT = 4;
 
   function toggle(id) {
     if (selected.includes(id)) {
       setSelected(prev => prev.filter(c => c !== id));
-    } else if (selected.length < 2) {
+    } else if (limitOverride || selected.length < LIMIT) {
       setSelected(prev => [...prev, id]);
     }
-    // Max 2 — after picking 2, others stay visible but untappable
   }
 
   function next() {
@@ -44,11 +45,11 @@ export default function Screen3Challenges({
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.step}>Step 2 of 3</Text>
         <Text style={[styles.headline, { color: colors.text }]}>Your biggest challenges</Text>
-        <Text style={styles.note}>Pick your top 2 to highlight on your Home screen. All modules are always available to you — these just go to the top.</Text>
+        <Text style={styles.note}>Pick up to 4 to highlight on your Home screen. All modules are always available — these just go to the top.</Text>
 
         {CHALLENGES.map(c => {
           const isSelected = selected.includes(c.id);
-          const isDisabled = !isSelected && selected.length >= 2;
+          const isDisabled = !isSelected && !limitOverride && selected.length >= LIMIT;
           return (
             <TouchableOpacity
               key={c.id}
@@ -69,15 +70,26 @@ export default function Screen3Challenges({
           );
         })}
 
-        {selected.length === 2 && (
-          <Text style={styles.hint}>These two will be highlighted at the top of your Home screen. You can use every other module freely.</Text>
+        {selected.length >= LIMIT && !limitOverride && (
+          <TouchableOpacity onPress={() => setLimitOverride(true)} style={styles.moreLink}>
+            <Text style={[styles.moreLinkText, { color: colors.primary }]}>+ Choose more than 4</Text>
+          </TouchableOpacity>
+        )}
+
+        {selected.length >= 1 && (
+          <Text style={styles.hint}>
+            {selected.length === 1
+              ? 'This will be highlighted at the top of your Home screen.'
+              : `These ${selected.length} will be highlighted at the top of your Home screen.`}
+            {' '}You can use every other module freely.
+          </Text>
         )}
       </ScrollView>
 
       <TouchableOpacity
-        style={[styles.button, selected.length < 2 && styles.buttonDisabled]}
+        style={[styles.button, selected.length < 1 && styles.buttonDisabled]}
         onPress={next}
-        disabled={selected.length < 2}
+        disabled={selected.length < 1}
       >
         <Text style={styles.buttonText}>Next →</Text>
       </TouchableOpacity>
@@ -118,7 +130,9 @@ const styles = StyleSheet.create({
   optionText: { fontSize: 16, color: colors.text, fontWeight: '600' },
   disabledText: { color: '#AAA' },
   moduleTag: { fontSize: 12, color: colors.primary, marginTop: 2, fontWeight: '500' },
-  hint: { fontSize: 14, color: colors.primary, textAlign: 'center', marginTop: 8, fontStyle: 'italic' },
+  hint:         { fontSize: 14, color: colors.primary, textAlign: 'center', marginTop: 8, fontStyle: 'italic' },
+  moreLink:     { alignItems: 'center', paddingVertical: 12 },
+  moreLinkText: { fontSize: 14, fontWeight: '700' },
   button: {
     backgroundColor: colors.primary,
     marginHorizontal: 28,

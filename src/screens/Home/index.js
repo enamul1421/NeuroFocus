@@ -23,7 +23,8 @@ const GROUPS = [
       { key: 'routine',  label: 'Routine',    icon: '☀️', route: 'MorningRoutine',        color: '#BF360C', bg: '#FF8A65', desc: 'Morning + night prep' },
       { key: 'timewise', label: 'TimeWise',   icon: '⏱',  route: 'TimeWise',              color: '#0D47A1', bg: '#64B5F6', desc: 'Train your clock' },
       { key: 'mood',     label: 'Moods',      icon: '🌊', route: 'MoodBridgePlaceholder', color: '#006064', bg: '#4DD0E1', desc: 'Check in & regulate' },
-      { key: 'sleep',    label: 'SleepGuard', icon: '😴', route: 'SleepGuard',            color: '#283593', bg: '#1A1A3A', desc: 'Wind down', darkText: true },
+      { key: 'sleep',       label: 'SleepGuard',  icon: '😴', route: 'SleepGuard',   color: '#283593', bg: '#1A1A3A', desc: 'Wind down',          darkText: true },
+      { key: 'screenshift', label: 'ScreenShift', icon: '📵', route: 'ScreenShift', color: '#2E7D32', bg: '#E8F5E9', desc: 'Screen to life' },
     ],
   },
   {
@@ -77,7 +78,7 @@ export default function Home({
     medicationEnabled, medicationLogs, addMedicationLog,
     angerCheckIns, bodyCheckIns, sleepQualityLogs, socialBatteryLogs,
     trueNorthLogs, stillPointSessions, connectWellSessions, thoughtCheckSessions,
-    topChallenges,
+    topChallenges, screenShiftLogs,
   } = useStore(s => ({
     userNickname:         s.userNickname,
     currentStreak:        s.currentStreak,
@@ -106,6 +107,7 @@ export default function Home({
     connectWellSessions:   s.connectWellSessions   || [],
     thoughtCheckSessions:  s.thoughtCheckSessions  || [],
     topChallenges:         s.topChallenges         || [],
+    screenShiftLogs:       s.screenShiftLogs       || [],
   }));
 
   // Groups collapsed by default except TODAY
@@ -230,6 +232,7 @@ export default function Home({
     if (key === 'stillpoint')   return !stillPointSessions.some(s => s.date && s.date.startsWith(todayStr));
     if (key === 'connectwell')  return !connectWellSessions.some(s => s.date && s.date.startsWith(todayStr));
     if (key === 'thoughtcheck') return !thoughtCheckSessions.some(s => s.date && s.date.startsWith(todayStr));
+    if (key === 'screenshift')  return !screenShiftLogs.some(l => l.date === todayStr);
     return false;
   }
 
@@ -262,7 +265,11 @@ export default function Home({
     if (key === 'focus')      return `${thisWeek(focusControlSessions)} this week`;
     if (key === 'memory')     return `${thisWeek(memoryBankSessions)} this week`;
     if (key === 'planner')    return `${plannerTasks.filter(t => t.status === 'active').length} active`;
-    if (key === 'confidence') return weeklyWins.length > 0 ? `${weeklyWins.length} wins` : null;
+    if (key === 'confidence')   return weeklyWins.length > 0 ? `${weeklyWins.length} wins` : null;
+    if (key === 'screenshift') {
+      const log = screenShiftLogs.find(l => l.date === todayStr);
+      return log ? (log.metGoal ? '✓ Goal met' : `~${log.hours}h logged`) : null;
+    }
     return null;
   }
 

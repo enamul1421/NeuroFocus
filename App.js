@@ -57,6 +57,7 @@ import WorryBreak from './src/screens/Modules/WorryBreak';
 import SensoryShield from './src/screens/Modules/SensoryShield';
 import SpeakUp from './src/screens/Modules/SpeakUp';
 import FlexSwitch from './src/screens/Modules/FlexSwitch';
+import ScreenShift from './src/screens/Modules/ScreenShift';
 
 const Stack = createNativeStackNavigator();
 
@@ -148,6 +149,7 @@ export default function App() {
               <Stack.Screen name="SensoryShield" component={SensoryShield} />
               <Stack.Screen name="SpeakUp" component={SpeakUp} />
               <Stack.Screen name="FlexSwitch" component={FlexSwitch} />
+              <Stack.Screen name="ScreenShift" component={ScreenShift} />
             </>
           )}
         </Stack.Navigator>

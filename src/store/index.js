@@ -407,6 +407,24 @@ export const useStore = create((set, get) => ({
     get().persist();
   },
 
+  // ScreenShift
+  screenShiftGoalHours: 3,
+  screenShiftLogs: [],
+
+  setScreenShiftGoal: (hours) => {
+    set({ screenShiftGoalHours: hours });
+    get().persist();
+  },
+
+  addScreenShiftLog: (log) => {
+    const logs = get().screenShiftLogs;
+    const filtered = logs.filter(l => l.date !== log.date);
+    set({ screenShiftLogs: [...filtered, log] });
+    get().awardXP(log.metGoal ? 50 : 20);
+    syncToSheets('ScreenShift', get().participantCode, log);
+    get().persist();
+  },
+
   // SleepGuard
   sleepTargetTime: { hour: 22, minute: 30 }, // 10:30 PM default
   sleepLogs: [],
@@ -560,6 +578,8 @@ export const useStore = create((set, get) => ({
       weeklyReviews: s.weeklyReviews,
       reviewNotificationTime: s.reviewNotificationTime,
       moduleNotifications: s.moduleNotifications,
+      screenShiftGoalHours: s.screenShiftGoalHours,
+      screenShiftLogs:      s.screenShiftLogs,
       sleepTargetTime: s.sleepTargetTime,
       sleepLogs: s.sleepLogs,
       socialBatteryLogs:         s.socialBatteryLogs,

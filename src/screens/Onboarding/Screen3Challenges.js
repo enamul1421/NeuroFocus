@@ -16,6 +16,7 @@ const CHALLENGES = [
   { id: 'social',     label: 'Feeling lost in social situations',        module: 'Connect' },
   { id: 'speakup',    label: 'Hard to speak up for myself',              module: 'SpeakUp' },
   { id: 'confidence', label: 'Doubting myself or my abilities',          module: 'Confidence' },
+  { id: 'screenshift',label: 'Losing too much time to screens',          module: 'ScreenShift' },
 ];
 
 export default function Screen3Challenges({

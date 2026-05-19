@@ -248,7 +248,8 @@ export default function Home({
     sensory:    { label: 'Sensory',    icon: '🛡️', route: 'SensoryShield',          color: '#6A1B9A', bg: '#F3E5F5', desc: 'Sensory toolkit' },
     social:     { label: 'Connect',    icon: '🤝', route: 'ConnectWell',            color: '#1B5E20', bg: '#C8E6C9', desc: 'Navigate social moments' },
     speakup:    { label: 'SpeakUp',    icon: '🎤', route: 'SpeakUp',               color: '#1565C0', bg: '#E3F2FD', desc: 'Scripts for hard conversations' },
-    confidence: { label: 'Confidence', icon: '⚡', route: 'ConfidenceCorePlaceholder', color: '#6A0032', bg: '#F8BBD0', desc: 'Log wins · build belief' },
+    confidence:   { label: 'Confidence',  icon: '⚡', route: 'ConfidenceCorePlaceholder', color: '#6A0032', bg: '#F8BBD0', desc: 'Log wins · build belief' },
+    screenshift:  { label: 'ScreenShift', icon: '📵', route: 'ScreenShift',              color: '#2E7D32', bg: '#E8F5E9', desc: 'Screen to life' },
   };
 
   const priorityModules = topChallenges.map(id => CHALLENGE_MODULE[id]).filter(Boolean);

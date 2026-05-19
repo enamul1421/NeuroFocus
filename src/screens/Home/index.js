@@ -383,20 +383,19 @@ export default function Home({
           <View style={styles.groupBlock}>
             <View style={styles.groupHeader}>
               <View style={[styles.groupDot, { backgroundColor: '#5B5EA6' }]} />
-              <Text style={[styles.groupLabel, { color: '#5B5EA6' }]}>Your Priority</Text>
+              <Text style={[styles.groupLabel, { color: '#5B5EA6' }]}>My Priority</Text>
             </View>
-            <Text style={styles.groupHint}>Your top challenges — highlighted here, always available everywhere</Text>
+            <Text style={styles.groupHint}>My top challenges — highlighted here, always available everywhere</Text>
             <View style={styles.grid}>
               {priorityModules.map((mod, i) => (
                 <TouchableOpacity
                   key={i}
-                  style={[styles.card, { width: CARD_W2, backgroundColor: mod.bg, borderColor: mod.color + '40' }]}
+                  style={[styles.card, styles.cardCompact, { width: CARD_W4, backgroundColor: mod.bg, borderColor: mod.color + '40' }]}
                   onPress={() => navigation.navigate(mod.route)}
                   activeOpacity={0.85}
                 >
-                  <Text style={styles.cardIcon}>{mod.icon}</Text>
-                  <Text style={[styles.cardLabel, { color: mod.darkText ? '#fff' : mod.color }]} numberOfLines={1}>{mod.label}</Text>
-                  <Text style={[styles.cardDesc, { color: mod.darkText ? '#ccc' : mod.color + 'CC' }]} numberOfLines={2}>{mod.desc}</Text>
+                  <Text style={[styles.cardIcon, { fontSize: 22 }]}>{mod.icon}</Text>
+                  <Text style={[styles.cardLabel, { color: mod.darkText ? '#fff' : mod.color, fontSize: 10 }]} numberOfLines={1}>{mod.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>

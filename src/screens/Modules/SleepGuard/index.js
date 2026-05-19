@@ -62,7 +62,7 @@ export default function SleepGuard({ navigation }) {
   useEffect(() => () => { clearTimeout(timerRef.current); }, []);
 
   useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60000);
+    const id = setInterval(() => setNow(new Date()), 10000);
     return () => clearInterval(id);
   }, []);
 
@@ -195,7 +195,7 @@ export default function SleepGuard({ navigation }) {
                       fill="none"
                       strokeLinecap="round"
                       strokeDasharray={CIRC}
-                      strokeDashoffset={CIRC * (1 - progress)}
+                      strokeDashoffset={CIRC * progress}
                       transform="rotate(-90, 75, 75)"
                     />
                   </Svg>

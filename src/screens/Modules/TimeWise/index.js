@@ -185,6 +185,9 @@ export default function TimeWise({
         >
           <Text style={styles.buttonText}>Start timer →</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.backLink} onPress={() => setPhase(PHASE.INTRO)}>
+          <Text style={styles.backLinkText}>← Back</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }

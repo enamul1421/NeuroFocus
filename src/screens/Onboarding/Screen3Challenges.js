@@ -30,6 +30,7 @@ export default function Screen3Challenges({
     } else if (selected.length < 2) {
       setSelected(prev => [...prev, id]);
     }
+    // Max 2 — after picking 2, others stay visible but untappable
   }
 
   function next() {
@@ -42,7 +43,7 @@ export default function Screen3Challenges({
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.step}>Step 2 of 3</Text>
         <Text style={[styles.headline, { color: colors.text }]}>Your biggest challenges</Text>
-        <Text style={styles.note}>Pick your top 2. This shapes your daily sessions.</Text>
+        <Text style={styles.note}>Pick your top 2 to highlight on your Home screen. All modules are always available to you — these just go to the top.</Text>
 
         {CHALLENGES.map(c => {
           const isSelected = selected.includes(c.id);
@@ -68,7 +69,7 @@ export default function Screen3Challenges({
         })}
 
         {selected.length === 2 && (
-          <Text style={styles.hint}>These two will appear most often in your daily session.</Text>
+          <Text style={styles.hint}>These two will be highlighted at the top of your Home screen. You can use every other module freely.</Text>
         )}
       </ScrollView>
 

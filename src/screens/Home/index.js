@@ -77,6 +77,7 @@ export default function Home({
     medicationEnabled, medicationLogs, addMedicationLog,
     angerCheckIns, bodyCheckIns, sleepQualityLogs, socialBatteryLogs,
     trueNorthLogs, stillPointSessions, connectWellSessions, thoughtCheckSessions,
+    topChallenges,
   } = useStore(s => ({
     userNickname:         s.userNickname,
     currentStreak:        s.currentStreak,
@@ -104,6 +105,7 @@ export default function Home({
     stillPointSessions:    s.stillPointSessions    || [],
     connectWellSessions:   s.connectWellSessions   || [],
     thoughtCheckSessions:  s.thoughtCheckSessions  || [],
+    topChallenges:         s.topChallenges         || [],
   }));
 
   // Groups collapsed by default except TODAY
@@ -221,6 +223,23 @@ export default function Home({
     if (key === 'thoughtcheck') return !thoughtCheckSessions.some(s => s.date && s.date.startsWith(todayStr));
     return false;
   }
+
+  const CHALLENGE_MODULE = {
+    time:       { label: 'TimeWise',   icon: '⏱',  route: 'TimeWise',                color: '#0D47A1', bg: '#64B5F6', desc: 'Train your time sense' },
+    planning:   { label: 'Planner',    icon: '📅', route: 'WeeklyPlanner',           color: '#4A148C', bg: '#F3E5F5', desc: 'Break big projects down' },
+    starting:   { label: 'GlassBreak', icon: '🧊', route: 'GlassBreak',             color: '#4527A0', bg: '#EDE7F6', desc: 'Break the freeze · start now' },
+    focus:      { label: 'FocusCtrl',  icon: '🎯', route: 'FocusControlPlaceholder', color: '#283593', bg: '#7986CB', desc: 'Build your mental brake' },
+    memory:     { label: 'Memory',     icon: '🧠', route: 'MemoryBankPlaceholder',   color: '#004D40', bg: '#4DB6AC', desc: 'Sharpen working memory' },
+    anger:      { label: 'CoolDown',   icon: '🆘', route: 'CoolDown',               color: '#B71C1C', bg: '#FFCDD2', desc: 'Reset when overwhelmed' },
+    worry:      { label: 'WorryBreak', icon: '🌀', route: 'WorryBreak',             color: '#0277BD', bg: '#E1F5FE', desc: 'Check the worry · act or let go' },
+    sleep:      { label: 'SleepGuard', icon: '😴', route: 'SleepGuard',             color: '#283593', bg: '#1A1A3A', desc: 'Wind-down routine', darkText: true },
+    sensory:    { label: 'Sensory',    icon: '🛡️', route: 'SensoryShield',          color: '#6A1B9A', bg: '#F3E5F5', desc: 'Sensory toolkit' },
+    social:     { label: 'Connect',    icon: '🤝', route: 'ConnectWell',            color: '#1B5E20', bg: '#C8E6C9', desc: 'Navigate social moments' },
+    speakup:    { label: 'SpeakUp',    icon: '🎤', route: 'SpeakUp',               color: '#1565C0', bg: '#E3F2FD', desc: 'Scripts for hard conversations' },
+    confidence: { label: 'Confidence', icon: '⚡', route: 'ConfidenceCorePlaceholder', color: '#6A0032', bg: '#F8BBD0', desc: 'Log wins · build belief' },
+  };
+
+  const priorityModules = topChallenges.map(id => CHALLENGE_MODULE[id]).filter(Boolean);
 
   function monday() {
     const d = new Date(); d.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1)); d.setHours(0,0,0,0); return d;
@@ -342,6 +361,31 @@ export default function Home({
             <Text style={[styles.plannerCardArrow, { color: '#4A148C' }]}>→</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Priority modules — from onboarding challenge picks */}
+        {priorityModules.length > 0 && (
+          <View style={styles.groupBlock}>
+            <View style={styles.groupHeader}>
+              <View style={[styles.groupDot, { backgroundColor: '#5B5EA6' }]} />
+              <Text style={[styles.groupLabel, { color: '#5B5EA6' }]}>Your Priority</Text>
+            </View>
+            <Text style={styles.groupHint}>Your top challenges — highlighted here, always available everywhere</Text>
+            <View style={styles.grid}>
+              {priorityModules.map((mod, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={[styles.card, { width: CARD_W2, backgroundColor: mod.bg, borderColor: mod.color + '40' }]}
+                  onPress={() => navigation.navigate(mod.route)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.cardIcon}>{mod.icon}</Text>
+                  <Text style={[styles.cardLabel, { color: mod.darkText ? '#fff' : mod.color }]} numberOfLines={1}>{mod.label}</Text>
+                  <Text style={[styles.cardDesc, { color: mod.darkText ? '#ccc' : mod.color + 'CC' }]} numberOfLines={2}>{mod.desc}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Module groups */}
         {GROUPS.map(group => {

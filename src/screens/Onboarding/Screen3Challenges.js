@@ -17,6 +17,7 @@ const CHALLENGES = [
   { id: 'speakup',    label: 'Hard to speak up for myself',              module: 'SpeakUp' },
   { id: 'confidence', label: 'Doubting myself or my abilities',          module: 'Confidence' },
   { id: 'screenshift',label: 'Losing too much time to screens',          module: 'ScreenShift' },
+  { id: 'studycoach', label: 'Struggling to sit down and actually study', module: 'StudyCoach' },
 ];
 
 export default function Screen3Challenges({

@@ -407,6 +407,21 @@ export const useStore = create((set, get) => ({
     get().persist();
   },
 
+  // StudyCoach — stimulating deadlines + INCUP motivation
+  studyCoachSessions: [],
+
+  addStudyCoachSession: (session) => {
+    set({ studyCoachSessions: [...get().studyCoachSessions, session] });
+    const xp = session.outcome === 'done' ? 60 : session.outcome === 'partial' ? 30 : 10;
+    get().awardXP(xp);
+    if (session.outcome !== 'missed') {
+      get().updateStreak();
+      set({ totalSessions: get().totalSessions + 1 });
+    }
+    syncToSheets('StudyCoach', get().participantCode, session);
+    get().persist();
+  },
+
   // ScreenShift
   screenShiftGoalHours: 3,
   screenShiftLogs: [],
@@ -578,6 +593,7 @@ export const useStore = create((set, get) => ({
       weeklyReviews: s.weeklyReviews,
       reviewNotificationTime: s.reviewNotificationTime,
       moduleNotifications: s.moduleNotifications,
+      studyCoachSessions:   s.studyCoachSessions,
       screenShiftGoalHours: s.screenShiftGoalHours,
       screenShiftLogs:      s.screenShiftLogs,
       sleepTargetTime: s.sleepTargetTime,

@@ -25,6 +25,7 @@ const GROUPS = [
       { key: 'mood',     label: 'Moods',      icon: '🌊', route: 'MoodBridgePlaceholder', color: '#006064', bg: '#4DD0E1', desc: 'Check in & regulate' },
       { key: 'sleep',       label: 'SleepGuard',  icon: '😴', route: 'SleepGuard',   color: '#283593', bg: '#1A1A3A', desc: 'Wind down',          darkText: true },
       { key: 'screenshift', label: 'ScreenShift', icon: '📵', route: 'ScreenShift', color: '#2E7D32', bg: '#E8F5E9', desc: 'Screen to life' },
+      { key: 'studycoach',  label: 'StudyCoach',  icon: '📚', route: 'StudyCoach',  color: '#6A1B9A', bg: '#F3E5F5', desc: 'Lock in & study' },
     ],
   },
   {
@@ -78,7 +79,7 @@ export default function Home({
     medicationEnabled, medicationLogs, addMedicationLog,
     angerCheckIns, bodyCheckIns, sleepQualityLogs, socialBatteryLogs,
     trueNorthLogs, stillPointSessions, connectWellSessions, thoughtCheckSessions,
-    topChallenges, screenShiftLogs,
+    topChallenges, screenShiftLogs, studyCoachSessions,
   } = useStore(s => ({
     userNickname:         s.userNickname,
     currentStreak:        s.currentStreak,
@@ -108,10 +109,11 @@ export default function Home({
     thoughtCheckSessions:  s.thoughtCheckSessions  || [],
     topChallenges:         s.topChallenges         || [],
     screenShiftLogs:       s.screenShiftLogs       || [],
+    studyCoachSessions:    s.studyCoachSessions    || [],
   }));
 
   // Groups collapsed by default except TODAY
-  const [expandedGroups, setExpandedGroups] = React.useState({ daily: true, support: false, weekly: false, grow: false });
+  const [expandedGroups, setExpandedGroups] = React.useState({ daily: false, support: false, weekly: false, grow: false });
   const scrollRef = useRef(null);
   const groupYRef = useRef({});
 
@@ -233,6 +235,7 @@ export default function Home({
     if (key === 'connectwell')  return !connectWellSessions.some(s => s.date && s.date.startsWith(todayStr));
     if (key === 'thoughtcheck') return !thoughtCheckSessions.some(s => s.date && s.date.startsWith(todayStr));
     if (key === 'screenshift')  return !screenShiftLogs.some(l => l.date === todayStr);
+    if (key === 'studycoach')   return !studyCoachSessions.some(s => s.date === todayStr);
     return false;
   }
 
@@ -270,6 +273,12 @@ export default function Home({
     if (key === 'screenshift') {
       const log = screenShiftLogs.find(l => l.date === todayStr);
       return log ? (log.metGoal ? '✓ Goal met' : `~${log.hours}h logged`) : null;
+    }
+    if (key === 'studycoach') {
+      const todaySess = studyCoachSessions.filter(s => s.date === todayStr);
+      if (todaySess.length === 0) return null;
+      const done = todaySess.filter(s => s.outcome === 'done').length;
+      return `${todaySess.length} session${todaySess.length > 1 ? 's' : ''}${done > 0 ? ' ✓' : ''}`;
     }
     return null;
   }

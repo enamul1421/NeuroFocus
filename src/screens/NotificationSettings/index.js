@@ -1,4 +1,21 @@
 import React, { useState } from 'react';
+
+const CHALLENGES = [
+  { id: 'time',       label: 'Losing track of time',                      module: 'TimeWise' },
+  { id: 'planning',   label: 'Getting overwhelmed by big projects',        module: 'Weekly Planner' },
+  { id: 'starting',   label: 'Freezing up and not starting things',        module: 'GlassBreak' },
+  { id: 'focus',      label: 'Staying focused for long tasks',             module: 'FocusCtrl' },
+  { id: 'memory',     label: 'Forgetting things mid-task',                 module: 'Memory' },
+  { id: 'anger',      label: 'Managing big emotions or anger',             module: 'CoolDown' },
+  { id: 'worry',      label: 'Worrying too much about things',             module: 'WorryBreak' },
+  { id: 'sleep',      label: 'Trouble sleeping or winding down',           module: 'SleepGuard' },
+  { id: 'sensory',    label: 'Getting overwhelmed by noise or crowds',     module: 'Sensory' },
+  { id: 'social',     label: 'Feeling lost in social situations',          module: 'Connect' },
+  { id: 'speakup',    label: 'Hard to speak up for myself',                module: 'SpeakUp' },
+  { id: 'confidence', label: 'Doubting myself or my abilities',            module: 'Confidence' },
+  { id: 'screenshift',label: 'Losing too much time to screens',            module: 'ScreenShift' },
+  { id: 'studycoach', label: 'Struggling to sit down and actually study',  module: 'StudyCoach' },
+];
 import { SafeAreaView } from 'react-native-safe-area-context';import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch,
 } from 'react-native';
@@ -25,6 +42,7 @@ export default function NotificationSettings({
     themeMode, setThemeMode,
     medicationEnabled, medicationTimes, setMedicationReminder,
     hyperfocusEnabled, hyperfocusIntervalMinutes, setHyperfocusBreaker,
+    topChallenges, setOnboardingData,
   } = useStore(s => ({
     moduleNotifications:       s.moduleNotifications,
     setModuleNotification:     s.setModuleNotification,
@@ -36,6 +54,8 @@ export default function NotificationSettings({
     hyperfocusEnabled:         s.hyperfocusEnabled,
     hyperfocusIntervalMinutes: s.hyperfocusIntervalMinutes || 90,
     setHyperfocusBreaker:      s.setHyperfocusBreaker,
+    topChallenges:             s.topChallenges || [],
+    setOnboardingData:         s.setOnboardingData,
   }));
 
   const [pickerKey,    setPickerKey]   = useState(null);
@@ -106,6 +126,46 @@ export default function NotificationSettings({
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.headline, { color: colors.text }]}>Settings</Text>
         <SpeakButton text="Settings lets us control how NeuroFocus works for us — dark mode, notifications for each module, medication reminders, and more. We can set it up once and it runs in the background to support us." style={{ marginBottom: 12 }} />
+
+        {/* My Priorities */}
+        <Text style={[styles.sectionHead, { color: colors.primary }]}>MY PRIORITIES</Text>
+        <Text style={[styles.sub, { color: colors.text, marginBottom: 10 }]}>
+          These appear at the top of Home. Tap to toggle — pick up to 4.
+        </Text>
+        <View style={{ gap: 6, marginBottom: 16 }}>
+          {CHALLENGES.map(c => {
+            const active = topChallenges.includes(c.id);
+            const atLimit = topChallenges.length >= 4 && !active;
+            return (
+              <TouchableOpacity
+                key={c.id}
+                style={[styles.priorityRow, {
+                  backgroundColor: active ? colors.primary + '18' : colors.surface,
+                  borderColor:     active ? colors.primary : colors.border,
+                  opacity: atLimit ? 0.4 : 1,
+                }]}
+                onPress={() => {
+                  if (atLimit) return;
+                  const updated = active
+                    ? topChallenges.filter(id => id !== c.id)
+                    : [...topChallenges, c.id];
+                  setOnboardingData({ topChallenges: updated });
+                }}
+              >
+                <View style={[styles.priorityCheck, {
+                  backgroundColor: active ? colors.primary : 'transparent',
+                  borderColor:     active ? colors.primary : '#CCC',
+                }]}>
+                  {active && <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800' }}>✓</Text>}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.priorityLabel, { color: colors.text }]}>{c.label}</Text>
+                  <Text style={[styles.priorityModule, { color: colors.textLight }]}>{c.module}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         {/* Dark mode */}
         <Text style={[styles.sectionHead, { color: colors.primary }]}>APPEARANCE</Text>
@@ -262,7 +322,11 @@ const styles = StyleSheet.create({
   back:      { marginTop: 16, marginBottom: 8, alignItems: 'center' },
   backText:  { fontSize: 15, color: colors.primary, fontWeight: '600' },
   headline:   { fontSize: 26, fontWeight: '800', marginBottom: 16 },
-  sectionHead:{ fontSize: 11, fontWeight: '800', letterSpacing: 1, marginBottom: 8, marginTop: 4 },
+  sectionHead:  { fontSize: 11, fontWeight: '800', letterSpacing: 1, marginBottom: 8, marginTop: 4 },
+  priorityRow:  { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 12, borderWidth: 1.5, padding: 12 },
+  priorityCheck:{ width: 22, height: 22, borderRadius: 6, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  priorityLabel:{ fontSize: 14, fontWeight: '600' },
+  priorityModule:{ fontSize: 11, marginTop: 1 },
   sub:        { fontSize: 13, color: '#888', marginBottom: 16, lineHeight: 20 },
 
   row: {

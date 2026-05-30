@@ -54,8 +54,8 @@ export function fmtMins(mins) {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-function makeSession(scheduledDate, durationMin) {
-  return { id: `sess_${Date.now()}_${Math.random()}`, scheduledDate, durationMin, notificationId: null };
+function makeSession(scheduledDate, durationMin, userSet = false) {
+  return { id: `sess_${Date.now()}_${Math.random()}`, scheduledDate, durationMin, notificationId: null, userSet };
 }
 
 export default function AddTask({
@@ -193,6 +193,7 @@ export default function AddTask({
     steps.forEach((step, si) => {
       step.sessions.forEach((sess, ssi) => {
         if (si === stepIdx && ssi === sessIdx) return;
+        if (!sess.userSet) return;
         const s2 = new Date(sess.scheduledDate);
         const e2 = new Date(s2.getTime() + (sess.durationMin || 30) * 60000);
         if (start < e2 && s2 < end) list.push(`This task — ${step.name} (Session ${ssi + 1})`);
@@ -213,7 +214,7 @@ export default function AddTask({
     }
     setTempDate(newDate);
     setSteps(prev => prev.map((s, i) => i !== stepIdx ? s : {
-      ...s, sessions: s.sessions.map((sess, si) => si !== sessIdx ? sess : { ...sess, scheduledDate: newISO }),
+      ...s, sessions: s.sessions.map((sess, si) => si !== sessIdx ? sess : { ...sess, scheduledDate: newISO, userSet: true }),
     }));
   }
 
@@ -228,7 +229,7 @@ export default function AddTask({
     }
     setTempDate(new Date(newISO));
     setSteps(prev => prev.map((s, i) => i !== stepIdx ? s : {
-      ...s, sessions: s.sessions.map((sess, si) => si !== sessIdx ? sess : { ...sess, scheduledDate: newISO }),
+      ...s, sessions: s.sessions.map((sess, si) => si !== sessIdx ? sess : { ...sess, scheduledDate: newISO, userSet: true }),
     }));
   }
 
